@@ -2,12 +2,12 @@
 
 from distutils.core import setup
 
-setup(name='masque',
+setup(name='gridlock',
       version='0.1',
-      description='Lithography mask library',
+      description='Coupled gridding library',
       author='Jan Petykiewicz',
       author_email='anewusername@gmail.com',
-      url='https://mpxd.net/gogs/jan/masque',
-      packages=['masque'],
+      url='https://mpxd.net/gogs/jan/gridlock',
+      packages=['gridlock'],
      )
 
