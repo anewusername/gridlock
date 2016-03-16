@@ -19,4 +19,4 @@ Requirements:
 
 Install with pip, via git:
 
->pip install --upgrade git+https://mpxd.net/gogs/jan/gridlock.git
+>pip install --upgrade git+https://mpxd.net/gogs/jan/gridlock.git@release
