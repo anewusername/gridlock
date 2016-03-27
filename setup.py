@@ -13,9 +13,6 @@ setup(name='gridlock',
             'numpy',
             'float_raster',
       ],
-      dependency_links=[
-            'git+https://mpxd.net/gogs/jan/float_raster.git@release#egg=float_raster-0.1'
-      ],
       extras_require={
           'visualization': ['matplotlib'],
           'visualization-isosurface': [
