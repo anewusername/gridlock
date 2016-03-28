@@ -8,7 +8,7 @@ setup(name='gridlock',
       author='Jan Petykiewicz',
       author_email='anewusername@gmail.com',
       url='https://mpxd.net/gogs/jan/gridlock',
-      packages=['gridlock'],
+      packages=find_packages(),
       install_requires=[
             'numpy',
             'float_raster',
