@@ -19,5 +19,7 @@ Requirements:
 
 Install with pip, via git:
 
->pip install --upgrade git+https://mpxd.net/gogs/jan/float_raster.git@release
->pip install --upgrade git+https://mpxd.net/gogs/jan/gridlock.git@release
+```bash
+pip install git+https://mpxd.net/gogs/jan/float_raster.git@release
+pip install git+https://mpxd.net/gogs/jan/gridlock.git@release
+```
