@@ -587,7 +587,7 @@ class Grid(object):
                          [+dimensions[0], +dimensions[1]],
                          [+dimensions[0], -dimensions[1]],
                          [-dimensions[0], -dimensions[1]]], dtype=float)
-        thickness = dimensions[3]
+        thickness = dimensions[2]
         self.draw_polygon(Direction.z, center, p, thickness, eps)
 
     def draw_cylinder(self,
