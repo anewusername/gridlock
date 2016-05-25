@@ -56,13 +56,13 @@ class Grid(object):
     # For each axis, determines how far the rightmost boundary gets shifted
     periodic = [False] * 3  # type: List[bool]
 
-    # Intended for use as a static constant
-    Yee_Shifts = 0.5 * numpy.array([[1, 0, 0],
-                                    [0, 1, 0],
-                                    [0, 0, 1],
-                                    [0, 1, 1],
-                                    [1, 0, 1],
-                                    [1, 1, 0]], dtype=float)    # type: numpy.ndarray
+    # Intended for use as static constants
+    Yee_Shifts_E = 0.5 * numpy.array([[1, 0, 0],
+                                      [0, 1, 0],
+                                      [0, 0, 1]], dtype=float)    # type: numpy.ndarray
+    Yee_Shifts_H = 0.5 * numpy.array([[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]], dtype=float)    # type: numpy.ndarray
 
     @property
     def dxyz(self) -> List[numpy.ndarray]:
@@ -263,7 +263,7 @@ class Grid(object):
 
     def __init__(self,
                  pixel_edge_coordinates: List[List or numpy.ndarray],
-                 shifts: numpy.ndarray or List=Yee_Shifts,
+                 shifts: numpy.ndarray or List=Yee_Shifts_E,
                  initial: float or numpy.ndarray or List[float] or List[numpy.ndarray]=(1.0,)*3,
                  num_grids: int=None,
                  periodic: bool or List[bool]=False):
@@ -275,7 +275,7 @@ class Grid(object):
          (ie, [[x0, x1, x2,...], [y0,...], [z0,...]] where the first pixel has x-edges x=x0 and
           x=x1, the second has edges x=x1 and x=x2, etc.)
         :param shifts: Nx3 array containing [x, y, z] offsets for each of N grids.
-         Yee shifts are used by default.
+         E-field Yee shifts are used by default.
         :param initial: Grids are initialized to this value. If scalar, all grids are initialized
          with ndarrays full of the scalar. If a list of scalars, grid[i] is initialized to an
          ndarray full of initial[i]. If a list of ndarrays of the same shape as the grids, grid[i]
