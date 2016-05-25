@@ -681,7 +681,8 @@ class Grid(object):
                         surface_normal: Direction or int,
                         center: float,
                         which_shifts: int=0,
-                        sample_period: int=1):
+                        sample_period: int=1,
+                        finalize: bool=True):
         """
         Visualize a slice of a grid.
         Interpolates if given a position between two planes.
@@ -748,13 +749,15 @@ class Grid(object):
         pyplot.gca().set_aspect('equal', adjustable='box')
         pyplot.xlabel(x_label)
         pyplot.ylabel(y_label)
-        pyplot.show()
+        if finalize:
+            pyplot.show()
 
     def visualize_isosurface(self,
                              level: float=None,
                              which_shifts: int=0,
                              sample_period: int=1,
-                             show_edges: bool=True):
+                             show_edges: bool=True,
+                             finalize: bool=True):
         """
         Draw an isosurface plot of the device.
 
@@ -801,4 +804,5 @@ class Grid(object):
         for xb, yb, zb in zip(xbs, ybs, zbs):
             ax.plot([xb], [yb], [zb], 'w')
 
-        pyplot.show()
+        if finalize:
+            pyplot.show()
