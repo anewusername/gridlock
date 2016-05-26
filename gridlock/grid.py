@@ -171,9 +171,9 @@ class Grid(object):
 
     def ind2pos(self,
                 ind: numpy.ndarray or List,
-                which_shifts: int or None=None,
-                round_ind: bool=True,
-                check_bounds: bool=True
+                which_shifts: int = None,
+                round_ind: bool = True,
+                check_bounds: bool = True
                 ) -> numpy.ndarray:
         """
         Returns the natural position corresponding to the specified indices.
@@ -263,10 +263,10 @@ class Grid(object):
 
     def __init__(self,
                  pixel_edge_coordinates: List[List or numpy.ndarray],
-                 shifts: numpy.ndarray or List=Yee_Shifts_E,
-                 initial: float or numpy.ndarray or List[float] or List[numpy.ndarray]=(1.0,)*3,
-                 num_grids: int=None,
-                 periodic: bool or List[bool]=False):
+                 shifts: numpy.ndarray or List = Yee_Shifts_E,
+                 initial: float or numpy.ndarray or List[float] or List[numpy.ndarray] = (1.0,)*3,
+                 num_grids: int = None,
+                 periodic: bool or List[bool] = False):
         """
         Initialize a new Grid
 
@@ -753,7 +753,7 @@ class Grid(object):
         :param center: Scalar specifying position along surface_normal axis.
         :param which_shifts: Which grid to display. Default is the first grid (0).
         :param sample_period: Period for down-sampling the image. Default 1 (disabled)
-        :param finalize: Whether to call pyplot.show() after constructing the plot.
+        :param finalize: Whether to call pyplot.show() after constructing the plot. Default True
         """
         from matplotlib import pyplot
 
@@ -778,11 +778,11 @@ class Grid(object):
             pyplot.show()
 
     def visualize_isosurface(self,
-                             level: float=None,
-                             which_shifts: int=0,
-                             sample_period: int=1,
-                             show_edges: bool=True,
-                             finalize: bool=True):
+                             level: float = None,
+                             which_shifts: int = 0,
+                             sample_period: int = 1,
+                             show_edges: bool = True,
+                             finalize: bool = True):
         """
         Draw an isosurface plot of the device.
 
@@ -790,6 +790,7 @@ class Grid(object):
         :param which_shifts: Which grid to display. Default is the first grid (0).
         :param sample_period: Period for down-sampling the image. Default 1 (disabled)
         :param show_edges: Whether to draw triangle edges. Default True
+        :param finalize: Whether to call pyplot.show() after constructing the plot. Default True
         """
         from matplotlib import pyplot
         import skimage.measure
