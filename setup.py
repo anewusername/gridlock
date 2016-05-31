@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='gridlock',
-      version='0.1',
+      version='0.2',
       description='Coupled gridding library',
       author='Jan Petykiewicz',
       author_email='anewusername@gmail.com',
