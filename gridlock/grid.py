@@ -5,6 +5,7 @@ from numpy import diff, floor, ceil, zeros, hstack, newaxis
 
 import pickle
 import warnings
+import copy
 
 from float_raster import raster
 
@@ -168,6 +169,16 @@ class Grid(object):
         exyz = self.shifted_exyz(which_shifts)
         dxyz = self.shifted_dxyz(which_shifts)
         return [exyz[a][:-1] + dxyz[a] / 2.0 for a in range(3)]
+
+    def autoshifted_dxyz(self):
+        """
+        Return cell widths, with each dimension shifted by the corresponding shifts.
+
+        :return: [grid.shifted_dxyz(which_shifts=a)[a] for a in range(3)]
+        """
+        if len(self.grids) != 3:
+            raise GridError('autoshifting requires exactly 3 grids')
+        return [self.shifted_dxyz(which_shifts=a)[a] for a in range(3)]
 
     def ind2pos(self,
                 ind: numpy.ndarray or List,
@@ -345,6 +356,14 @@ class Grid(object):
         """
         with open(filename, 'wb') as f:
             pickle.dump(self.__dict__, f, protocol=2)
+
+    def copy(self):
+        """
+        Return a deep copy of the grid.
+
+        :return: Deep copy of the grid.
+        """
+        return copy.deepcopy(self)
 
     def draw_polygons(self,
                       surface_normal: Direction or int,
