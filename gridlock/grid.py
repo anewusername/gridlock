@@ -776,6 +776,10 @@ class Grid(object):
         """
         from matplotlib import pyplot
 
+        # Set surface normal to its integer value
+        if isinstance(surface_normal, Direction):
+            surface_normal = surface_normal.value
+
         grid_slice = self.get_slice(surface_normal=surface_normal,
                                     center=center,
                                     which_shifts=which_shifts,
