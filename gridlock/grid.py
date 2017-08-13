@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Dict
 
 import numpy
 from numpy import diff, floor, ceil, zeros, hstack, newaxis
@@ -762,7 +762,8 @@ class Grid(object):
                         center: float,
                         which_shifts: int = 0,
                         sample_period: int = 1,
-                        finalize: bool = True):
+                        finalize: bool = True,
+                        pcolormesh_args: Dict = None):
         """
         Visualize a slice of a grid.
         Interpolates if given a position between two planes.
@@ -780,6 +781,9 @@ class Grid(object):
         if isinstance(surface_normal, Direction):
             surface_normal = surface_normal.value
 
+        if pcolormesh_args is None:
+            pcolormesh_args = {}
+
         grid_slice = self.get_slice(surface_normal=surface_normal,
                                     center=center,
                                     which_shifts=which_shifts,
@@ -792,7 +796,7 @@ class Grid(object):
         x_label, y_label = ('xyz'[a] for a in surface)
 
         pyplot.figure()
-        pyplot.pcolormesh(xmesh, ymesh, grid_slice)
+        pyplot.pcolormesh(xmesh, ymesh, grid_slice, **pcolormesh_args)
         pyplot.colorbar()
         pyplot.gca().set_aspect('equal', adjustable='box')
         pyplot.xlabel(x_label)
