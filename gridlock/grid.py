@@ -307,9 +307,12 @@ class Grid(object):
         self.periodic = periodic
 
         self.shifts = numpy.array(shifts, dtype=float)
+        if len(self.shifts.shape) != 2:
+            raise GridError('Misshapen shifts: shifts must have two axes! '
+                            ' The given shifts has shape {}'.format(self.shifts.shape))
         if self.shifts.shape[1] != 3:
-            GridError('Misshapen shifts; second axis size should be 3,'
-                      ' shape is {}'.format(self.shifts.shape))
+            raise GridError('Misshapen shifts; second axis size should be 3,'
+                            ' shape is {}'.format(self.shifts.shape))
 
         num_shifts = self.shifts.shape[0]
         if num_grids is None:
