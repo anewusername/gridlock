@@ -322,6 +322,8 @@ class Grid(object):
 
         grids_shape = hstack((num_grids, self.shape))
         if is_scalar(initial):
+            if isinstance(initial, int):
+                warnings.warn('Initial value is an int, grids will be integer-typed!')
             self.grids = numpy.full(grids_shape, initial)
         else:
             if len(initial) < num_grids:
@@ -331,6 +333,8 @@ class Grid(object):
             for i in range(num_grids):
                 if is_scalar(initial[i]):
                     if initial[i] is not None:
+                        if isinstance(initial[i], int):
+                            warnings.warn('Initial value is an int, grid {} will be integer-typed!'.format(i))
                         self.grids[i] = numpy.full(self.shape, initial[i])
                 else:
                     if not numpy.array_equal(initial[i].shape, self.shape):
