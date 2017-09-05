@@ -509,8 +509,8 @@ class Grid(object):
                 w_coord = floor(w_coord_fp).astype(int)
                 return w_coord_fp, w_coord
 
-            zi_top_fp, zi_top = get_zi(+thickness/2.0)
-            zi_bot_fp, zi_bot = get_zi(-thickness/2.0)
+            zi_top_fp, zi_top = get_zi(+thickness / 2.0)
+            zi_bot_fp, zi_bot = get_zi(-thickness / 2.0)
 
             w_z[zi_bot:zi_top + 1] = 1
 
