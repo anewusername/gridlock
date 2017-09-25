@@ -28,10 +28,10 @@ class Grid(object):
     is generated based on the coordinates of the boundary points). Also does
     straightforward natural <-> grid unit conversion.
 
-    self.grids[i][a,b,c] contains the value of epsilon for the cell located at
-          (xyz[0][a]+dxyz[0][a]*shifts[i, 0],
-           xyz[1][b]+dxyz[1][b]*shifts[i, 1],
-           xyz[2][c]+dxyz[2][c]*shifts[i, 2]).
+    self.grids[i][a,b,c] contains the value of epsilon for the cell located around
+          (xyz[0][a] + dxyz[0][a] * shifts[i, 0],
+           xyz[1][b] + dxyz[1][b] * shifts[i, 1],
+           xyz[2][c] + dxyz[2][c] * shifts[i, 2]).
      You can get raw edge coordinates (exyz),
                    center coordinates (xyz),
                            cell sizes (dxyz),
