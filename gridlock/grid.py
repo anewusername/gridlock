@@ -207,7 +207,7 @@ class Grid(object):
                 check_bounds: bool = True
                 ) -> numpy.ndarray:
         """
-        Returns the natural position corresponding to the specified indices.
+        Returns the natural position corresponding to the specified cell center indices.
          The resulting position is clipped to the bounds of the grid
         (to cell centers if round_ind=True, or cell outer edges if round_ind=False)
 
@@ -235,7 +235,7 @@ class Grid(object):
                 raise GridError('Position outside of grid: {}'.format(ind))
 
         if round_ind:
-            rind = numpy.clip(numpy.round(ind), 0, self.shape - 1)
+            rind = numpy.clip(numpy.round(ind).astype(int), 0, self.shape - 1)
             sxyz = self.shifted_xyz(which_shifts)
             position = [sxyz[a][rind[a]].astype(int) for a in range(3)]
         else:
@@ -251,7 +251,7 @@ class Grid(object):
                 check_bounds: bool=True
                 ) -> numpy.ndarray:
         """
-        Returns the indices corresponding to the specified natural position.
+        Returns the cell-center indices corresponding to the specified natural position.
              The resulting position is clipped to within the outer centers of the grid.
 
         :param r: Natural position that we will convert into indices (3-element ndarray or list)
@@ -266,7 +266,7 @@ class Grid(object):
             raise GridError('r must be 3-element vector: {}'.format(r))
 
         if (which_shifts is not None) and (which_shifts >= self.shifts.shape[0]):
-            raise GridError('')
+            raise GridError('Invalid which_shifts: {}'.format(which_shifts))
 
         sexyz = self.shifted_exyz(which_shifts)
 
@@ -277,8 +277,8 @@ class Grid(object):
 
         grid_pos = zeros((3,))
         for a in range(3):
-            xi = numpy.digitize(r[a], sexyz[a])  # Figure out which cell we're in
-            xi_clipped = numpy.clip(xi, 1, sexyz[a].size - 1) - 1  # Clip back into grid bounds
+            xi = numpy.digitize(r[a], sexyz[a]) - 1 # Figure out which cell we're in
+            xi_clipped = numpy.clip(xi, 0, sexyz[a].size - 2)  # Clip back into grid bounds
 
             # No need to interpolate if round_ind is true or we were outside the grid
             if round_ind or xi != xi_clipped:
@@ -288,6 +288,7 @@ class Grid(object):
                 x = self.shifted_xyz(which_shifts)[a][xi]
                 dx = self.shifted_dxyz(which_shifts)[a][xi]
                 f = (r[a] - x) / dx
+                
                 # Clip to centers
                 grid_pos[a] = numpy.clip(xi + f, 0, self.shape[a] - 1)
         return grid_pos
@@ -532,7 +533,7 @@ class Grid(object):
             def get_zi(offset):
                 pos_3d = to_3d([0, 0], center[surface_normal] + offset)
                 grid_coords = self.pos2ind(pos_3d, i, check_bounds=False, round_ind=False)
-                w_coord_fp = (grid_coords - bdi_min)[surface_normal]
+                w_coord_fp = (grid_coords - bdi_min)[surface_normal] + 0.5
                 w_coord = floor(w_coord_fp).astype(int)
                 return w_coord_fp, w_coord
 
@@ -541,10 +542,10 @@ class Grid(object):
 
             w_z[zi_bot:zi_top + 1] = 1
 
-            if zi_top_fp != zi_top < self.shape[surface_normal] - 1:
+            if zi_top_fp != zi_top < self.shape[surface_normal]:
                 f = zi_top_fp - zi_top
                 w_z[zi_top] = f
-            if zi_bot_fp != zi_bot > 0:
+            if zi_bot_fp != zi_bot > -1:
                 f = zi_bot_fp - zi_bot
                 w_z[zi_bot] = 1 - f
 
@@ -639,7 +640,7 @@ class Grid(object):
         p = numpy.array([[-dimensions[0], +dimensions[1]],
                          [+dimensions[0], +dimensions[1]],
                          [+dimensions[0], -dimensions[1]],
-                         [-dimensions[0], -dimensions[1]]], dtype=float) / 2
+                         [-dimensions[0], -dimensions[1]]], dtype=float) / 2.0
         thickness = dimensions[2]
         self.draw_polygon(Direction.z, center, p, thickness, eps)
 
