@@ -317,6 +317,13 @@ class Grid(object):
             raise GridError('Misshapen shifts; second axis size should be 3,'
                             ' shape is {}'.format(self.shifts.shape))
 
+        if (numpy.abs(self.shifts) > 1).any():
+            raise GridError('Only shifts in the range [-1, 1] are currently supported')
+
+        if (self.shifts < 0).any():
+            # TODO: Test negative shifts
+            warnings.warn('Negative shifts are still experimental and mostly untested, be careful!')
+
         num_shifts = self.shifts.shape[0]
         if num_grids is None:
             num_grids = num_shifts
