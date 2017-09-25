@@ -145,6 +145,12 @@ class Grid(object):
             return self.exyz
         dxyz = self.dxyz_with_ghost
         shifts = self.shifts[which_shifts, :]
+
+        # If shift is negative, use left cell's dx to determine shift
+        for a in range(3):
+            if shifts[a] < 0:
+                dxyz[a] = numpy.roll(dxyz, 1)
+
         return [self.exyz[a] + dxyz[a] * shifts[a] for a in range(3)]
 
     def shifted_dxyz(self, which_shifts: int or None) -> List[numpy.ndarray]:
@@ -158,7 +164,18 @@ class Grid(object):
             return self.dxyz
         shifts = self.shifts[which_shifts, :]
         dxyz = self.dxyz_with_ghost
-        return [(dxyz[a][:-1] * (1 - shifts[a]) + dxyz[a][1:] * shifts[a]) for a in range(3)]
+
+        # If shift is negative, use left cell's dx to determine size
+        sdxyz = []
+        for a in range(3):
+            if shifts[a] < 0:
+                roll_dxyz = numpy.roll(dxyz[a], 1)
+                abs_shift = numpy.abs(shifts[a])
+                sdxyz.append(roll_dxyz[:-1] * abs_shift + roll_dxyz[1:] * (1 - abs_shift))
+            else:
+                sdxyz.append(dxyz[a][:-1] * (1 - shifts[a]) + dxyz[a][1:] * shifts[a])
+
+        return sdxyz
 
     def shifted_xyz(self, which_shifts: int or None) -> List[numpy.ndarray]:
         """
