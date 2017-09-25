@@ -38,6 +38,9 @@ class Grid(object):
       from the properties named as above, or get them for a given grid by using the
       self.shifted_*xyz(which_shifts) functions.
 
+     The sizes of adjacent cells are taken into account when applying shifts. The
+      total shift for each edge is chosen using (shift * dx_of_cell_being_moved_through).
+
      It is tricky to determine the size of the right-most cell after shifting,
       since its right boundary should shift by shifts[i][a] * dxyz[a][dxyz[a].size],
       where the dxyz element refers to a cell that does not exist.
