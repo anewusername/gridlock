@@ -150,7 +150,7 @@ def visualize_isosurface(self,
         level = grid.mean()
 
     # Find isosurface with marching cubes
-    verts, faces = skimage.measure.marching_cubes(grid, level)
+    verts, faces, _normals, _values = skimage.measure.marching_cubes(grid, level)
 
     # Convert vertices from index to position
     pos_verts = numpy.array([self.ind2pos(verts[i, :], which_shifts, round_ind=False)

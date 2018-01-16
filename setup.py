@@ -17,7 +17,7 @@ setup(name='gridlock',
           'visualization': ['matplotlib'],
           'visualization-isosurface': [
                 'matplotlib',
-                'skimage',
+                'skimage>=0.13',
                 'mpl_toolkits',
           ],
       },
