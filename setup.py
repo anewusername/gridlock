@@ -7,7 +7,7 @@ setup(name='gridlock',
       description='Coupled gridding library',
       author='Jan Petykiewicz',
       author_email='anewusername@gmail.com',
-      url='https://mpxd.net/gogs/jan/gridlock',
+      url='https://mpxd.net/code/jan/gridlock',
       packages=find_packages(),
       install_requires=[
             'numpy',

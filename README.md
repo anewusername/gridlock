@@ -12,7 +12,7 @@ the coordinates of the boundary points along each axis).
 Requirements:
 * python 3 (written and tested with 3.5)
 * numpy
-* [float_raster](https://mpxd.net/gogs/jan/float_raster)
+* [float_raster](https://mpxd.net/code/jan/float_raster)
 * matplotlib (optional, used for visualization functions)
 * mpl_toolkits.mplot3d (optional, used for isosurface visualization)
 * skimage (optional, used for isosurface visualization)
@@ -20,6 +20,6 @@ Requirements:
 Install with pip, via git:
 
 ```bash
-pip install git+https://mpxd.net/gogs/jan/float_raster.git@release
-pip install git+https://mpxd.net/gogs/jan/gridlock.git@release
+pip install git+https://mpxd.net/code/jan/float_raster.git@release
+pip install git+https://mpxd.net/code/jan/gridlock.git@release
 ```
