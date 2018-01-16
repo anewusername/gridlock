@@ -246,7 +246,7 @@ def draw_cuboid(self,
     """
     Draw an axis-aligned cuboid
 
-    :param center: 3-element ndarray or list specifying the cylinder's center
+    :param center: 3-element ndarray or list specifying the cuboid's center
     :param dimensions: 3-element list or ndarray containing the x, y, and z edge-to-edge
         sizes of the cuboid
     :param eps: Value to draw with ('epsilon'). See draw_polygons() for details.
