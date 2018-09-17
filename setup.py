@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 from setuptools import setup, find_packages
+import gridlock
 
 setup(name='gridlock',
-      version='0.2',
+      version=gridlock.version,
       description='Coupled gridding library',
       author='Jan Petykiewicz',
       author_email='anewusername@gmail.com',

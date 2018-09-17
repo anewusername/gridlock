@@ -21,3 +21,5 @@ from .direction import Direction
 from .grid import Grid
 
 __author__ = 'Jan Petykiewicz'
+
+version = '0.2'
