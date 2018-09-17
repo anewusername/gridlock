@@ -3,9 +3,14 @@
 from setuptools import setup, find_packages
 import gridlock
 
+with open('README.md', 'r') as f:
+    long_description = f.read()
+
 setup(name='gridlock',
       version=gridlock.version,
       description='Coupled gridding library',
+      long_description=long_description,
+      long_description_content_type='text/markdown',
       author='Jan Petykiewicz',
       author_email='anewusername@gmail.com',
       url='https://mpxd.net/code/jan/gridlock',
