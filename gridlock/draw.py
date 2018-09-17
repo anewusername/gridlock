@@ -130,8 +130,8 @@ def draw_polygons(self,
             edge_slices = [numpy.s_[i:f + 2] for i, f in zip(corner_min, corner_max)]
             # Then for the pixel centers (-bdi_min since we're
             #  calculating weights within a subspace)
-            centers_slice = [numpy.s_[i:f + 1] for i, f in zip(corner_min - bdi_min[surface],
-                                                               corner_max - bdi_min[surface])]
+            centers_slice = tuple(numpy.s_[i:f + 1] for i, f in zip(corner_min - bdi_min[surface],
+                                                                    corner_max - bdi_min[surface]))
 
             aa_x, aa_y = (self.shifted_exyz(i)[a][s] for a, s in zip(surface, edge_slices))
             w_xy[centers_slice] += raster(polygon.T, aa_x, aa_y)
@@ -165,7 +165,7 @@ def draw_polygons(self,
         w = (w_xy[:, :, newaxis] * w_z).transpose(numpy.insert([0, 1], surface_normal, (2,)))
 
         # ## Modify the grid
-        g_slice = [numpy.s_[bdi_min[a]:bdi_max[a] + 1] for a in range(3)]
+        g_slice = tuple(numpy.s_[bdi_min[a]:bdi_max[a] + 1] for a in range(3))
         self.grids[i][g_slice] = (1 - w) * self.grids[i][g_slice] + w * eps[i]
 
 
