@@ -165,8 +165,8 @@ def draw_polygons(self,
         w = (w_xy[:, :, newaxis] * w_z).transpose(numpy.insert([0, 1], surface_normal, (2,)))
 
         # ## Modify the grid
-        g_slice = tuple(numpy.s_[bdi_min[a]:bdi_max[a] + 1] for a in range(3))
-        self.grids[i][g_slice] = (1 - w) * self.grids[i][g_slice] + w * eps[i]
+        g_slice = (i,) + tuple(numpy.s_[bdi_min[a]:bdi_max[a] + 1] for a in range(3))
+        self.grids[g_slice] = (1 - w) * self.grids[g_slice] + w * eps[i]
 
 
 def draw_polygon(self,
