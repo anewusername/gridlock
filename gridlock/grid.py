@@ -229,7 +229,7 @@ class Grid(object):
         self.exyz = [numpy.unique(pixel_edge_coordinates[i]) for i in range(3)]
         for i in range(3):
             if len(self.exyz[i]) != len(pixel_edge_coordinates[i]):
-                warnings.warn('Dimension {} had duplicate edge coordinates'.format(i))
+                warnings.warn('Dimension {} had duplicate edge coordinates'.format(i), stacklevel=2)
 
         if is_scalar(periodic):
             periodic = [periodic] * 3
@@ -248,7 +248,7 @@ class Grid(object):
 
         if (self.shifts < 0).any():
             # TODO: Test negative shifts
-            warnings.warn('Negative shifts are still experimental and mostly untested, be careful!')
+            warnings.warn('Negative shifts are still experimental and mostly untested, be careful!', stacklevel=2)
 
         num_shifts = self.shifts.shape[0]
         if num_grids is None:
@@ -259,7 +259,7 @@ class Grid(object):
         grids_shape = hstack((num_grids, self.shape))
         if is_scalar(initial):
             if isinstance(initial, int):
-                warnings.warn('Initial value is an int, grids will be integer-typed!')
+                warnings.warn('Initial value is an int, grids will be integer-typed!', stacklevel=2)
             self.grids = numpy.full(grids_shape, initial)
         else:
             if len(initial) < num_grids:
@@ -270,7 +270,7 @@ class Grid(object):
                 if is_scalar(initial[i]):
                     if initial[i] is not None:
                         if isinstance(initial[i], int):
-                            warnings.warn('Initial value is an int, grid {} will be integer-typed!'.format(i))
+                            warnings.warn('Initial value is an int, grid {} will be integer-typed!'.format(i), stacklevel=2)
                         self.grids[i] = numpy.full(self.shape, initial[i])
                 else:
                     if not numpy.array_equal(initial[i].shape, self.shape):
