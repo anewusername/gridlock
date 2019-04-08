@@ -7,6 +7,10 @@ same spatial region, but are offset from each other. It does straightforward nat
 conversion and can handle non-uniform rectangular grids (the entire grid is generated based on
 the coordinates of the boundary points along each axis).
 
+- [Source repository](https://mpxd.net/code/jan/gridlock)
+- [PyPi](https://pypi.org/project/gridlock)
+
+
 ## Installation
 
 Requirements:
@@ -17,9 +21,14 @@ Requirements:
 * mpl_toolkits.mplot3d (optional, used for isosurface visualization)
 * skimage (optional, used for isosurface visualization)
 
-Install with pip, via git:
 
+Install with pip:
 ```bash
-pip install git+https://mpxd.net/code/jan/float_raster.git@release
-pip install git+https://mpxd.net/code/jan/gridlock.git@release
+pip3 install gridlock
+```
+
+Alternatively, install via git
+```bash
+pip3 install git+https://mpxd.net/code/jan/float_raster.git@release
+pip3 install git+https://mpxd.net/code/jan/gridlock.git@release
 ```
