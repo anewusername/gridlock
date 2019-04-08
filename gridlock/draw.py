@@ -145,7 +145,7 @@ def draw_polygons(self,
         def get_zi(offset):
             pos_3d = to_3d([0, 0], center[surface_normal] + offset)
             grid_coords = self.pos2ind(pos_3d, i, check_bounds=False, round_ind=False)
-            w_coord_fp = (grid_coords - bdi_min)[surface_normal] + 0.5
+            w_coord_fp = ((grid_coords - bdi_min)[surface_normal] + 0.5).clip(0)
             w_coord = floor(w_coord_fp).astype(int)
             return w_coord_fp, w_coord
 
