@@ -204,7 +204,7 @@ class Grid(object):
     def __init__(self,
                  pixel_edge_coordinates: List[List or numpy.ndarray],
                  shifts: numpy.ndarray or List = Yee_Shifts_E,
-                 initial: float or numpy.ndarray or List[float] or List[numpy.ndarray] = (1.0,)*3,
+                 initial: float or numpy.ndarray or List[float] or List[numpy.ndarray] = 1.0,
                  num_grids: int = None,
                  periodic: bool or List[bool] = False):
         """
