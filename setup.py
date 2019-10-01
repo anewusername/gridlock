@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
 from setuptools import setup, find_packages
-import gridlock
 
 with open('README.md', 'r') as f:
     long_description = f.read()
 
+with open('gridlock/VERSION', 'r') as f:
+    version = f.read().strip()
+
 setup(name='gridlock',
-      version=gridlock.version,
+      version=version,
       description='Coupled gridding library',
       long_description=long_description,
       long_description_content_type='text/markdown',
@@ -15,6 +17,9 @@ setup(name='gridlock',
       author_email='anewusername@gmail.com',
       url='https://mpxd.net/code/jan/gridlock',
       packages=find_packages(),
+      package_data={
+          'gridlock': ['VERSION']
+      },
       install_requires=[
             'numpy',
             'float_raster',
