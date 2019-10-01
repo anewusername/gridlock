@@ -47,7 +47,7 @@ class Grid(object):
     exyz = []               # type: List[numpy.ndarray]
 
     # epsilon (or mu, or whatever) grids
-    grids = []              # type: List[numpy.ndarray]
+    grids = []              # type: numpy.ndarray
 
     # [[x0 y0 z0], [x1, y1, z1], ...] offsets for grid 0,1,...
     shifts = None           # type: numpy.ndarray
@@ -265,7 +265,7 @@ class Grid(object):
             if len(initial) < num_grids:
                 raise GridError('Too few initial grids specified!')
 
-            self.grids = [None] * num_grids
+            self.grids = numpy.empty(grids_shape)
             for i in range(num_grids):
                 if is_scalar(initial[i]):
                     if initial[i] is not None:
