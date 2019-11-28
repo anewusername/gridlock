@@ -216,16 +216,24 @@ class Grid(object):
          documentation. List of 3 bool, or a single bool that gets broadcast. Default False.
         :raises: GridError
         """
-        self.exyz = [numpy.unique(pixel_edge_coordinates[i]) for i in range(3)]
+        self.exyz = [numpy.unique(pixel_edge_coordinates[i]) for i in range(3)]     # type: List[numpy.ndarray]
+        """Cell edges. Monotonically increasing without duplicates."""
+
+        self.grids = None           # type: numpy.ndarray
+        """epsilon (or mu, or whatever) grids. shape is (num_grids, X, Y, Z)"""
+
         for i in range(3):
             if len(self.exyz[i]) != len(pixel_edge_coordinates[i]):
                 warnings.warn('Dimension {} had duplicate edge coordinates'.format(i), stacklevel=2)
 
         if is_scalar(periodic):
             periodic = [periodic] * 3
-        self.periodic = periodic
+        self.periodic = periodic       # type: List[bool]
+        """For each axis, determines how far the rightmost boundary gets shifted. """
 
-        self.shifts = numpy.array(shifts, dtype=float)
+        self.shifts = numpy.array(shifts, dtype=float)      # type: numpy.ndarray
+        """Offsets `[[x0, y0, z0], [x1, y1, z1], ...]` for grid `0,1,...`"""
+
         if len(self.shifts.shape) != 2:
             raise GridError('Misshapen shifts: shifts must have two axes! '
                             ' The given shifts has shape {}'.format(self.shifts.shape))
