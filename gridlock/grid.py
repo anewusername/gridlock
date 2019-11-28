@@ -43,25 +43,15 @@ class Grid(object):
       real cell, or, if self.periodic[a] is set to True, the same size as the first cell.
     """
 
-    # Cell edges. Monotonically increasing without duplicates
-    exyz = []               # type: List[numpy.ndarray]
-
-    # epsilon (or mu, or whatever) grids
-    grids = []              # type: numpy.ndarray
-
-    # [[x0 y0 z0], [x1, y1, z1], ...] offsets for grid 0,1,...
-    shifts = None           # type: numpy.ndarray
-
-    # For each axis, determines how far the rightmost boundary gets shifted
-    periodic = [False] * 3  # type: List[bool]
-
-    # Intended for use as static constants
     Yee_Shifts_E = 0.5 * numpy.array([[1, 0, 0],
                                       [0, 1, 0],
                                       [0, 0, 1]], dtype=float)    # type: numpy.ndarray
+    """Default shifts for Yee grid E-field"""
+
     Yee_Shifts_H = 0.5 * numpy.array([[0, 1, 1],
                                       [1, 0, 1],
                                       [1, 1, 0]], dtype=float)    # type: numpy.ndarray
+    """Default shifts for Yee grid H-field"""
 
     from .draw import draw_polygons, draw_polygon, draw_slab, draw_cuboid, \
            draw_cylinder, draw_extrude_rectangle
