@@ -108,7 +108,7 @@ class Grid(object):
         """
         # center is just average of first and last xyz, which is just the average of the
         #  first two and last two exyz
-        centers = [(self.exyz[a][:2] + self.exyz[a][-2:]) / 4.0 for a in range(3)]
+        centers = [(self.exyz[a][:2] + self.exyz[a][-2:]).sum() / 4.0 for a in range(3)]
         return numpy.array(centers, dtype=float)
 
     @property
