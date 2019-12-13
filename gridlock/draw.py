@@ -107,7 +107,8 @@ def draw_polygons(self,
 
         # ## Generate weighing function
         def to_3d(vector: List or numpy.ndarray, val: float=0.0):
-            return numpy.insert(vector, surface_normal, (val,))
+            v_2d = numpy.array(vector, dtype=float)
+            return numpy.insert(v_2d, surface_normal, (val,))
 
         w_xy = zeros((bdi_max - bdi_min + 1)[surface].astype(int))
 
@@ -143,23 +144,32 @@ def draw_polygons(self,
         w_z = numpy.zeros(((bdi_max - bdi_min + 1)[surface_normal], ))
 
         def get_zi(offset):
-            pos_3d = to_3d([0, 0], center[surface_normal] + offset)
-            grid_coords = self.pos2ind(pos_3d, i, check_bounds=False, round_ind=False)
-            w_coord_fp = ((grid_coords - bdi_min)[surface_normal] + 0.5).clip(0)
-            w_coord = floor(w_coord_fp).astype(int)
-            return w_coord_fp, w_coord
+            edges = self.shifted_exyz(i)[surface_normal]
+            point = center[surface_normal] + offset
+            grid_coord = numpy.digitize(point, edges) - 1
+            w_coord = grid_coord - bdi_min[surface_normal]
 
-        zi_top_fp, zi_top = get_zi(+thickness / 2.0)
-        zi_bot_fp, zi_bot = get_zi(-thickness / 2.0)
+            if grid_coord < 0:
+                w_coord = 0
+                f = 0
+            elif grid_coord >= w_z.size:
+                w_coord = w_z.size - 1
+                f = 1
+            else:
+                dz = self.shifted_dxyz(i)[surface_normal][grid_coord]
+                f = (point - edges[grid_coord]) / dz
+            return f, w_coord
 
-        w_z[zi_bot:zi_top + 1] = 1
+        zi_top_f, zi_top = get_zi(+thickness / 2.0)
+        zi_bot_f, zi_bot = get_zi(-thickness / 2.0)
 
-        if zi_top_fp != zi_top < self.shape[surface_normal]:
-            f = zi_top_fp - zi_top
-            w_z[zi_top] = f
-        if zi_bot_fp != zi_bot > -1:
-            f = zi_bot_fp - zi_bot
-            w_z[zi_bot] = 1 - f
+        w_z[zi_bot + 1:zi_top] = 1
+
+        if zi_bot < zi_top:
+            w_z[zi_top] = zi_top_f
+            w_z[zi_bot] = 1 - zi_bot_f
+        else:
+            w_z[zi_bot] = zi_top_f - zi_bot_f
 
         # 3) Generate total weight function
         w = (w_xy[:, :, newaxis] * w_z).transpose(numpy.insert([0, 1], surface_normal, (2,)))
