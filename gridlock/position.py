@@ -99,7 +99,7 @@ def pos2ind(self,
             x = self.shifted_xyz(which_shifts)[a][xi]
             dx = self.shifted_dxyz(which_shifts)[a][xi]
             f = (r[a] - x) / dx
-            
+
             # Clip to centers
             grid_pos[a] = numpy.clip(xi + f, 0, self.shape[a] - 1)
     return grid_pos

@@ -139,7 +139,7 @@ class Grid(object):
         # If shift is negative, use left cell's dx to determine shift
         for a in range(3):
             if shifts[a] < 0:
-                dxyz[a] = numpy.roll(dxyz, 1)
+                dxyz[a] = numpy.roll(dxyz[a], 1)
 
         return [self.exyz[a] + dxyz[a] * shifts[a] for a in range(3)]
 
