@@ -149,10 +149,10 @@ def draw_polygons(self,
             grid_coord = numpy.digitize(point, edges) - 1
             w_coord = grid_coord - bdi_min[surface_normal]
 
-            if grid_coord < 0:
+            if w_coord < 0:
                 w_coord = 0
                 f = 0
-            elif grid_coord >= w_z.size:
+            elif w_coord >= w_z.size:
                 w_coord = w_z.size - 1
                 f = 1
             else:
