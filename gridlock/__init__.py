@@ -15,15 +15,11 @@ Dependencies:
 - mpl_toolkits.mplot3d  [Grid.visualize_isosurface()]
 - skimage               [Grid.visualize_isosurface()]
 """
-
-import pathlib
-
 from .error import GridError
 from .direction import Direction
 from .grid import Grid
 
 __author__ = 'Jan Petykiewicz'
 
-with open(pathlib.Path(__file__).parent / 'VERSION', 'r') as f:
-    __version__ = f.read().strip()
+from .VERSION import __version__
 version = __version__

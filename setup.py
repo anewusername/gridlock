@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 with open('README.md', 'r') as f:
     long_description = f.read()
 
-with open('gridlock/VERSION', 'r') as f:
-    version = f.read().strip()
+with open('gridlock/VERSION.py', 'rt') as f:
+    version = f.readlines()[2].strip()
 
 setup(name='gridlock',
       version=version,
@@ -18,7 +18,7 @@ setup(name='gridlock',
       url='https://mpxd.net/code/jan/gridlock',
       packages=find_packages(),
       package_data={
-          'gridlock': ['VERSION']
+          'gridlock': [],
       },
       install_requires=[
             'numpy',
