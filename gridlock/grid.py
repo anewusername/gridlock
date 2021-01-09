@@ -1,6 +1,6 @@
-from typing import List, Tuple, Callable, Dict
+from typing import List, Tuple, Callable, Dict, Optional, Union, Sequence, ClassVar
 
-import numpy
+import numpy    # type: ignore
 from numpy import diff, floor, ceil, zeros, hstack, newaxis
 
 import pickle
@@ -23,24 +23,26 @@ class Grid(object):
     is generated based on the coordinates of the boundary points). Also does
     straightforward natural <-> grid unit conversion.
 
-    self.grids[i][a,b,c] contains the value of epsilon for the cell located around
+    `self.grids[i][a,b,c]` contains the value of epsilon for the cell located around
+    ```
           (xyz[0][a] + dxyz[0][a] * shifts[i, 0],
            xyz[1][b] + dxyz[1][b] * shifts[i, 1],
            xyz[2][c] + dxyz[2][c] * shifts[i, 2]).
-     You can get raw edge coordinates (exyz),
-                   center coordinates (xyz),
-                           cell sizes (dxyz),
+    ```
+     You can get raw edge coordinates (`exyz`),
+                   center coordinates (`xyz`),
+                           cell sizes (`dxyz`),
       from the properties named as above, or get them for a given grid by using the
-      self.shifted_*xyz(which_shifts) functions.
+      `self.shifted_*xyz(which_shifts)` functions.
 
      The sizes of adjacent cells are taken into account when applying shifts. The
-      total shift for each edge is chosen using (shift * dx_of_cell_being_moved_through).
+      total shift for each edge is chosen using `(shift * dx_of_cell_being_moved_through)`.
 
      It is tricky to determine the size of the right-most cell after shifting,
-      since its right boundary should shift by shifts[i][a] * dxyz[a][dxyz[a].size],
+      since its right boundary should shift by `shifts[i][a] * dxyz[a][dxyz[a].size]`,
       where the dxyz element refers to a cell that does not exist.
      Because of this, we either assume this 'ghost' cell is the same size as the last
-      real cell, or, if self.periodic[a] is set to True, the same size as the first cell.
+      real cell, or, if `self.periodic[a]` is set to `True`, the same size as the first cell.
     """
 
     Yee_Shifts_E = 0.5 * numpy.array([[1, 0, 0],
@@ -63,7 +65,8 @@ class Grid(object):
         """
         Cell sizes for each axis, no shifts applied
 
-        :return: List of 3 ndarrays of cell sizes
+        Returns:
+            List of 3 ndarrays of cell sizes
         """
         return [diff(self.exyz[a]) for a in range(3)]
 
@@ -72,7 +75,8 @@ class Grid(object):
         """
         Cell centers for each axis, no shifts applied
 
-        :return: List of 3 ndarrays of cell edges
+        Returns:
+            List of 3 ndarrays of cell edges
         """
         return [self.exyz[a][:-1] + self.dxyz[a] / 2.0 for a in range(3)]
 
@@ -81,7 +85,8 @@ class Grid(object):
         """
         The number of cells in x, y, and z
 
-        :return: ndarray [x_centers.size, y_centers.size, z_centers.size]
+        Returns:
+            ndarray of [x_centers.size, y_centers.size, z_centers.size]
         """
         return numpy.array([coord.size - 1 for coord in self.exyz], dtype=int)
 
@@ -95,7 +100,8 @@ class Grid(object):
          If periodic, final edge shifts same amount as first
          Otherwise, final edge shifts same amount as second-to-last
 
-        :return: list of [dxs, dys, dzs] with each element same length as elements of self.xyz
+        Returns:
+            list of [dxs, dys, dzs] with each element same length as elements of `self.xyz`
         """
         el = [0 if p else -1 for p in self.periodic]
         return [hstack((self.dxyz[a], self.dxyz[a][e])) for a, e in zip(range(3), el)]
@@ -104,7 +110,9 @@ class Grid(object):
     def center(self) -> numpy.ndarray:
         """
         Center position of the entire grid, no shifts applied
-        :return: ndarray [x_center, y_center, z_center]
+
+        Returns:
+            ndarray of [x_center, y_center, z_center]
         """
         # center is just average of first and last xyz, which is just the average of the
         #  first two and last two exyz
@@ -118,18 +126,22 @@ class Grid(object):
          ndarrays. No shifts are applied, so these are extreme bounds on these values (as a
          weighted average is performed when shifting).
 
-        :return: List of 2 ndarrays, d_min=[min(dx), min(dy), min(dz)] and d_max=[...]
+        Returns:
+            Tuple of 2 ndarrays, `d_min=[min(dx), min(dy), min(dz)]` and `d_max=[...]`
         """
         d_min = numpy.array([min(self.dxyz[a]) for a in range(3)], dtype=float)
         d_max = numpy.array([max(self.dxyz[a]) for a in range(3)], dtype=float)
         return d_min, d_max
 
-    def shifted_exyz(self, which_shifts: int or None) -> List[numpy.ndarray]:
+    def shifted_exyz(self, which_shifts: Optional[int]) -> List[numpy.ndarray]:
         """
         Returns edges for which_shifts.
 
-        :param which_shifts: Which grid (which shifts) to use, or None for unshifted
-        :return: List of 3 ndarrays of cell edges
+        Args:
+            which_shifts: Which grid (which shifts) to use, or `None` for unshifted
+
+        Returns:
+            List of 3 ndarrays of cell edges
         """
         if which_shifts is None:
             return self.exyz
@@ -143,12 +155,15 @@ class Grid(object):
 
         return [self.exyz[a] + dxyz[a] * shifts[a] for a in range(3)]
 
-    def shifted_dxyz(self, which_shifts: int or None) -> List[numpy.ndarray]:
+    def shifted_dxyz(self, which_shifts: Optional[int]) -> List[numpy.ndarray]:
         """
-        Returns cell sizes for which_shifts.
+        Returns cell sizes for `which_shifts`.
 
-        :param which_shifts: Which grid (which shifts) to use, or None for unshifted
-        :return: List of 3 ndarrays of cell sizes
+        Args:
+            which_shifts: Which grid (which shifts) to use, or `None` for unshifted
+
+        Returns:
+            List of 3 ndarrays of cell sizes
         """
         if which_shifts is None:
             return self.dxyz
@@ -167,12 +182,15 @@ class Grid(object):
 
         return sdxyz
 
-    def shifted_xyz(self, which_shifts: int or None) -> List[numpy.ndarray]:
+    def shifted_xyz(self, which_shifts: Optional[int]) -> List[numpy.ndarray]:
         """
-        Returns cell centers for which_shifts.
+        Returns cell centers for `which_shifts`.
 
-        :param which_shifts: Which grid (which shifts) to use, or None for unshifted
-        :return: List of 3 ndarrays of cell centers
+        Args:
+            which_shifts: Which grid (which shifts) to use, or `None` for unshifted
+
+        Returns:
+            List of 3 ndarrays of cell centers
         """
         if which_shifts is None:
             return self.xyz
@@ -184,7 +202,8 @@ class Grid(object):
         """
         Return cell widths, with each dimension shifted by the corresponding shifts.
 
-        :return: [grid.shifted_dxyz(which_shifts=a)[a] for a in range(3)]
+        Returns:
+            `[grid.shifted_dxyz(which_shifts=a)[a] for a in range(3)]`
         """
         if len(self.grids) != 3:
             raise GridError('autoshifting requires exactly 3 grids')
@@ -192,29 +211,31 @@ class Grid(object):
 
 
     def __init__(self,
-                 pixel_edge_coordinates: List[List or numpy.ndarray],
-                 shifts: numpy.ndarray or List = Yee_Shifts_E,
-                 initial: float or numpy.ndarray or List[float] or List[numpy.ndarray] = 1.0,
-                 num_grids: int = None,
-                 periodic: bool or List[bool] = False):
+                 pixel_edge_coordinates: Sequence[numpy.ndarray],
+                 shifts: numpy.ndarray = Yee_Shifts_E,
+                 initial: Union[float, numpy.ndarray] = 1.0,
+                 num_grids: Optional[int] = None,
+                 periodic: Union[bool, Sequence[bool]] = False,
+                 ) -> None:
         """
-        Initialize a new Grid
+        Args:
+            pixel_edge_coordinates: 3-element list of (ndarrays or lists) specifying the
+                coordinates of the pixel edges in each dimensions
+                (ie, `[[x0, x1, x2,...], [y0,...], [z0,...]]` where the first pixel has x-edges x=`x0` and
+                x=`x1`, the second has edges x=`x1` and x=`x2`, etc.)
+            shifts: Nx3 array containing `[x, y, z]` offsets for each of N grids.
+                E-field Yee shifts are used by default.
+            initial: Grids are initialized to this value. If scalar, all grids are initialized
+                with ndarrays full of the scalar. If a list of scalars, `grid[i]` is initialized to an
+                ndarray full of `initial[i]`. If a list of ndarrays of the same shape as the grids, `grid[i]`
+                is set to `initial[i]`. Default `1.0`.
+            num_grids: How many grids to create. Must be <= `shifts.shape[0]`.
+                Default is `shifts.shape[0]`
+            periodic: Specifies how the sizes of edge cells are calculated; see main class
+                documentation. List of 3 bool, or a single bool that gets broadcast. Default `False`.
 
-        :param pixel_edge_coordinates: 3-element list of (ndarrays or lists) specifying the
-         coordinates of the pixel edges in each dimensions
-         (ie, [[x0, x1, x2,...], [y0,...], [z0,...]] where the first pixel has x-edges x=x0 and
-          x=x1, the second has edges x=x1 and x=x2, etc.)
-        :param shifts: Nx3 array containing [x, y, z] offsets for each of N grids.
-         E-field Yee shifts are used by default.
-        :param initial: Grids are initialized to this value. If scalar, all grids are initialized
-         with ndarrays full of the scalar. If a list of scalars, grid[i] is initialized to an
-         ndarray full of initial[i]. If a list of ndarrays of the same shape as the grids, grid[i]
-         is set to initial[i]. Default 1.
-        :param num_grids: How many grids to create. Must be <= shifts.shape[0].
-         Default is shifts.shape[0]
-        :param periodic: Specifies how the sizes of edge cells are calculated; see main class
-         documentation. List of 3 bool, or a single bool that gets broadcast. Default False.
-        :raises: GridError
+        Raises:
+            `GridError` on invalid input
         """
         self.exyz = [numpy.unique(pixel_edge_coordinates[i]) for i in range(3)]     # type: List[numpy.ndarray]
         """Cell edges. Monotonically increasing without duplicates."""
@@ -280,7 +301,8 @@ class Grid(object):
         """
         Load a grid from a file
 
-        :param filename: Filename to load from.
+        Args:
+            filename: Filename to load from.
         """
         with open(filename, 'rb') as f:
             tmp_dict = pickle.load(f)
@@ -293,16 +315,15 @@ class Grid(object):
         """
         Save to file.
 
-        :param filename: Filename to save to.
+        Args:
+            filename: Filename to save to.
         """
         with open(filename, 'wb') as f:
             pickle.dump(self.__dict__, f, protocol=2)
 
     def copy(self):
         """
-        Return a deep copy of the grid.
-
-        :return: Deep copy of the grid.
+        Returns:
+            Deep copy of the grid.
         """
         return copy.deepcopy(self)
-

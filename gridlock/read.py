@@ -1,9 +1,9 @@
 """
 Readback and visualization methods for Grid class
 """
-from typing import Dict
+from typing import Dict, Optional, Union, Any
 
-import numpy
+import numpy        # type: ignore
 from numpy import floor, ceil, zeros
 
 from . import GridError, Direction
@@ -15,21 +15,24 @@ from ._helpers import is_scalar
 
 
 def get_slice(self,
-              surface_normal: Direction or int,
+              surface_normal: Union[Direction, int],
               center: float,
               which_shifts: int = 0,
               sample_period: int = 1
               ) -> numpy.ndarray:
     """
-        Retrieve a slice of a grid.
-        Interpolates if given a position between two planes.
+    Retrieve a slice of a grid.
+    Interpolates if given a position between two planes.
 
-        :param surface_normal: Axis normal to the plane we're displaying. Can be a Direction or
-         integer in range(3)
-        :param center: Scalar specifying position along surface_normal axis.
-        :param which_shifts: Which grid to display. Default is the first grid (0).
-        :param sample_period: Period for down-sampling the image. Default 1 (disabled)
-        :return Array containing the portion of the grid.
+    Args:
+        surface_normal: Axis normal to the plane we're displaying. Can be a `Direction` or
+            integer in `range(3)`
+        center: Scalar specifying position along surface_normal axis.
+        which_shifts: Which grid to display. Default is the first grid (0).
+        sample_period: Period for down-sampling the image. Default 1 (disabled)
+
+    Returns:
+        Array containing the portion of the grid.
     """
     if not is_scalar(center) and numpy.isreal(center):
         raise GridError('center must be a real scalar')
@@ -77,22 +80,24 @@ def get_slice(self,
 
 
 def visualize_slice(self,
-                    surface_normal: Direction or int,
+                    surface_normal: Union[Direction, int],
                     center: float,
                     which_shifts: int = 0,
                     sample_period: int = 1,
                     finalize: bool = True,
-                    pcolormesh_args: Dict = None):
+                    pcolormesh_args: Optional[Dict[str, Any]] = None,
+                    ) -> None:
     """
     Visualize a slice of a grid.
     Interpolates if given a position between two planes.
 
-    :param surface_normal: Axis normal to the plane we're displaying. Can be a Direction or
-     integer in range(3)
-    :param center: Scalar specifying position along surface_normal axis.
-    :param which_shifts: Which grid to display. Default is the first grid (0).
-    :param sample_period: Period for down-sampling the image. Default 1 (disabled)
-    :param finalize: Whether to call pyplot.show() after constructing the plot. Default True
+    Args:
+        surface_normal: Axis normal to the plane we're displaying. Can be a `Direction` or
+            integer in `range(3)`
+        center: Scalar specifying position along surface_normal axis.
+        which_shifts: Which grid to display. Default is the first grid (0).
+        sample_period: Period for down-sampling the image. Default 1 (disabled)
+        finalize: Whether to call `pyplot.show()` after constructing the plot. Default `True`
     """
     from matplotlib import pyplot
 
@@ -125,19 +130,21 @@ def visualize_slice(self,
 
 
 def visualize_isosurface(self,
-                         level: float = None,
+                         level: Optional[float] = None,
                          which_shifts: int = 0,
                          sample_period: int = 1,
                          show_edges: bool = True,
-                         finalize: bool = True):
+                         finalize: bool = True,
+                         ) -> None:
     """
     Draw an isosurface plot of the device.
 
-    :param level: Value at which to find isosurface. Default (None) uses mean value in grid.
-    :param which_shifts: Which grid to display. Default is the first grid (0).
-    :param sample_period: Period for down-sampling the image. Default 1 (disabled)
-    :param show_edges: Whether to draw triangle edges. Default True
-    :param finalize: Whether to call pyplot.show() after constructing the plot. Default True
+    Args:
+        level: Value at which to find isosurface. Default (None) uses mean value in grid.
+        which_shifts: Which grid to display. Default is the first grid (0).
+        sample_period: Period for down-sampling the image. Default 1 (disabled)
+        show_edges: Whether to draw triangle edges. Default `True`
+        finalize: Whether to call `pyplot.show()` after constructing the plot. Default `True`
     """
     from matplotlib import pyplot
     import skimage.measure

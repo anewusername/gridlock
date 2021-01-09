@@ -1,9 +1,9 @@
 """
 Drawing-related methods for Grid class
 """
-from typing import List
+from typing import List, Optional, Union, Sequence, Callable
 
-import numpy
+import numpy        # type: ignore
 from numpy import diff, floor, ceil, zeros, hstack, newaxis
 
 from float_raster import raster
@@ -12,27 +12,34 @@ from . import GridError, Direction
 from ._helpers import is_scalar
 
 
+eps_callable_t = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
+
+
 def draw_polygons(self,
-                  surface_normal: Direction or int,
-                  center: List or numpy.ndarray,
-                  polygons: List[numpy.ndarray or List],
+                  surface_normal: Union[Direction, int],
+                  center: numpy.ndarray,
+                  polygons: Sequence[numpy.ndarray],
                   thickness: float,
-                  eps: List[float or eps_callable_type] or float or eps_callable_type):
+                  eps: Union[Sequence[Union[float, eps_callable_t]], float, eps_callable_t],
+                  ) -> None:
     """
     Draw polygons on an axis-aligned plane.
 
-    :param surface_normal: Axis normal to the plane we're drawing on. Can be a Direction or
-     integer in range(3)
-    :param center: 3-element ndarray or list specifying an offset applied to all the polygons
-    :param polygons: List of Nx2 or Nx3 ndarrays, each specifying the vertices of a polygon
-         (non-closed, clockwise). If Nx3, the surface_normal coordinate is ignored. Each polygon
-         must have at least 3 vertices.
-    :param thickness: Thickness of the layer to draw
-    :param eps: Value to draw with ('epsilon'). Can be scalar, callable, or a list
-         of any of these (1 per grid). Callable values should take ndarrays x, y, z of equal
-         shape and return an ndarray of equal shape containing the eps value at the given x, y,
-         and z (natural, not grid coordinates).
-    :raises: GridError
+    Args:
+        surface_normal: Axis normal to the plane we're drawing on. Can be a `Direction` or
+            integer in `range(3)`
+        center: 3-element ndarray or list specifying an offset applied to all the polygons
+        polygons: List of Nx2 or Nx3 ndarrays, each specifying the vertices of a polygon
+            (non-closed, clockwise). If Nx3, the surface_normal coordinate is ignored. Each
+            polygon must have at least 3 vertices.
+        thickness: Thickness of the layer to draw
+        eps: Value to draw with ('epsilon'). Can be scalar, callable, or a list
+            of any of these (1 per grid). Callable values should take an ndarray the shape of the
+            grid and return an ndarray of equal shape containing the eps value at the given x, y,
+            and z (natural, not grid coordinates).
+
+    Raises:
+        GridError
     """
     # Turn surface_normal into its integer representation
     if isinstance(surface_normal, Direction):
@@ -180,39 +187,43 @@ def draw_polygons(self,
 
 
 def draw_polygon(self,
-                 surface_normal: Direction or int,
-                 center: List or numpy.ndarray,
-                 polygon: List or numpy.ndarray,
+                 surface_normal: Union[Direction, int],
+                 center: numpy.ndarray,
+                 polygon: numpy.ndarray,
                  thickness: float,
-                 eps: List[float or eps_callable_type] or float or eps_callable_type):
+                 eps: Union[Sequence[Union[float, eps_callable_t]], float, eps_callable_t],
+                 ) -> None:
     """
     Draw a polygon on an axis-aligned plane.
 
-    :param surface_normal: Axis normal to the plane we're drawing on. Can be a Direction or
-     integer in range(3)
-    :param center: 3-element ndarray or list specifying an offset applied to the polygon
-    :param polygon: Nx2 or Nx3 ndarray specifying the vertices of a polygon (non-closed,
-         clockwise). If Nx3, the surface_normal coordinate is ignored. Must have at least 3
-         vertices.
-    :param thickness: Thickness of the layer to draw
-    :param eps: Value to draw with ('epsilon'). See draw_polygons() for details.
+    Args:
+        surface_normal: Axis normal to the plane we're drawing on. Can be a Direction or
+            integer in range(3)
+        center: 3-element ndarray or list specifying an offset applied to the polygon
+        polygon: Nx2 or Nx3 ndarray specifying the vertices of a polygon (non-closed,
+            clockwise). If Nx3, the surface_normal coordinate is ignored. Must have at
+            least 3 vertices.
+        thickness: Thickness of the layer to draw
+        eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
     """
     self.draw_polygons(surface_normal, center, [polygon], thickness, eps)
 
 
 def draw_slab(self,
-              surface_normal: Direction or int,
-              center: List or numpy.ndarray,
+              surface_normal: Union[Direction, int],
+              center: numpy.ndarray,
               thickness: float,
-              eps: List[float or eps_callable_type] or float or eps_callable_type):
+              eps: Union[List[Union[float, eps_callable_t]], float, eps_callable_t],
+              ) -> None:
     """
     Draw an axis-aligned infinite slab.
 
-    :param surface_normal: Axis normal to the plane we're drawing on. Can be a Direction or
-     integer in range(3)
-    :param center: Surface_normal coordinate at the center of the slab
-    :param thickness: Thickness of the layer to draw
-    :param eps: Value to draw with ('epsilon'). See draw_polygons() for details.
+    Args:
+        surface_normal: Axis normal to the plane we're drawing on. Can be a `Direction` or
+            integer in `range(3)`
+        center: Surface_normal coordinate at the center of the slab
+        thickness: Thickness of the layer to draw
+        eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
     """
     # Turn surface_normal into its integer representation
     if isinstance(surface_normal, Direction):
@@ -250,16 +261,18 @@ def draw_slab(self,
 
 
 def draw_cuboid(self,
-                center: List or numpy.ndarray,
-                dimensions: List or numpy.ndarray,
-                eps: List[float or eps_callable_type] or float or eps_callable_type):
+                center: numpy.ndarray,
+                dimensions: numpy.ndarray,
+                eps: Union[List[Union[float, eps_callable_t]], float, eps_callable_t],
+                ) -> None:
     """
     Draw an axis-aligned cuboid
 
-    :param center: 3-element ndarray or list specifying the cuboid's center
-    :param dimensions: 3-element list or ndarray containing the x, y, and z edge-to-edge
-        sizes of the cuboid
-    :param eps: Value to draw with ('epsilon'). See draw_polygons() for details.
+    Args:
+        center: 3-element ndarray or list specifying the cuboid's center
+        dimensions: 3-element list or ndarray containing the x, y, and z edge-to-edge
+             sizes of the cuboid
+        eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
     """
     p = numpy.array([[-dimensions[0], +dimensions[1]],
                      [+dimensions[0], +dimensions[1]],
@@ -270,22 +283,24 @@ def draw_cuboid(self,
 
 
 def draw_cylinder(self,
-                  surface_normal: Direction or int,
-                  center: List or numpy.ndarray,
+                  surface_normal: Union[Direction, int],
+                  center: numpy.ndarray,
                   radius: float,
                   thickness: float,
                   num_points: int,
-                  eps: List[float or eps_callable_type] or float or eps_callable_type):
+                  eps: Union[List[Union[float, eps_callable_t]], float, eps_callable_t],
+                  ) -> None:
     """
     Draw an axis-aligned cylinder. Approximated by a num_points-gon
 
-    :param surface_normal: Axis normal to the plane we're drawing on. Can be a Direction or
-     integer in range(3)
-    :param center: 3-element ndarray or list specifying the cylinder's center
-    :param radius: cylinder radius
-    :param thickness: Thickness of the layer to draw
-    :param num_points: The circle is approximated by a polygon with num_points vertices
-    :param eps: Value to draw with ('epsilon'). See draw_polygons() for details.
+    Args:
+        surface_normal: Axis normal to the plane we're drawing on. Can be a `Direction` or
+            integer in `range(3)`
+        center: 3-element ndarray or list specifying the cylinder's center
+        radius: cylinder radius
+        thickness: Thickness of the layer to draw
+        num_points: The circle is approximated by a polygon with `num_points` vertices
+        eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
     """
     theta = numpy.linspace(0, 2*numpy.pi, num_points, endpoint=False)
     x = radius * numpy.sin(theta)
@@ -295,17 +310,19 @@ def draw_cylinder(self,
 
 
 def draw_extrude_rectangle(self,
-                           rectangle: List or numpy.ndarray,
-                           direction: Direction or int,
+                           rectangle: numpy.ndarray,
+                           direction: Union[Direction, int],
                            polarity: int,
-                           distance: float):
+                           distance: float,
+                           ) -> None:
     """
     Extrude a rectangle of a previously-drawn structure along an axis.
 
-    :param rectangle: 2x3 ndarray or list specifying the rectangle's corners
-    :param direction: Direction to extrude in. Direction enum or int in range(3)
-    :param polarity: +1 or -1, direction along axis to extrude in
-    :param distance: How far to extrude
+    Args:
+        rectangle: 2x3 ndarray or list specifying the rectangle's corners
+        direction: Direction to extrude in. Direction enum or int in range(3)
+        polarity: +1 or -1, direction along axis to extrude in
+        distance: How far to extrude
     """
     # Turn extrude_direction into its integer representation
     if isinstance(direction, Direction):

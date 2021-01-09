@@ -1,34 +1,39 @@
 """
 Position-related methods for Grid class
 """
+from typing import List, Optional
 
-from typing import List
-
-import numpy
+import numpy        # type: ignore
 from numpy import zeros
 
 from . import GridError
 
 
 def ind2pos(self,
-            ind: numpy.ndarray or List,
-            which_shifts: int = None,
+            ind: numpy.ndarray,
+            which_shifts: Optional[int] = None,
             round_ind: bool = True,
             check_bounds: bool = True
             ) -> numpy.ndarray:
     """
     Returns the natural position corresponding to the specified cell center indices.
      The resulting position is clipped to the bounds of the grid
-    (to cell centers if round_ind=True, or cell outer edges if round_ind=False)
+    (to cell centers if `round_ind=True`, or cell outer edges if `round_ind=False`)
 
-    :param ind: Indices of the position. Can be fractional. (3-element ndarray or list)
-    :param which_shifts: which grid number (shifts) to use
-    :param round_ind: Whether to round ind to the nearest integer position before indexing
-            (default True)
-    :param check_bounds: Whether to raise an GridError if the provided ind is outside of
-            the grid, as defined above (centers if round_ind, else edges) (default True)
-    :return: 3-element ndarray specifying the natural position
-    :raises: GridError
+    Args:
+        ind: Indices of the position. Can be fractional. (3-element ndarray or list)
+        which_shifts: which grid number (`shifts`) to use
+        round_ind: Whether to round ind to the nearest integer position before indexing
+            (default `True`)
+        check_bounds: Whether to raise an `GridError` if the provided ind is outside of
+            the grid, as defined above (centers if `round_ind`, else edges) (default `True`)
+
+    Returns:
+        3-element ndarray specifying the natural position
+
+    Raises:
+        `GridError` if invalid `which_shifts`
+        `GridError` if `check_bounds` and out of bounds
     """
     if which_shifts is not None and which_shifts >= self.shifts.shape[0]:
         raise GridError('Invalid shifts')
@@ -56,21 +61,27 @@ def ind2pos(self,
 
 
 def pos2ind(self,
-            r: numpy.ndarray or List,
-            which_shifts: int or None,
-            round_ind: bool=True,
-            check_bounds: bool=True
+            r: numpy.ndarray,
+            which_shifts: Optional[int],
+            round_ind: bool = True,
+            check_bounds: bool = True
             ) -> numpy.ndarray:
     """
     Returns the cell-center indices corresponding to the specified natural position.
          The resulting position is clipped to within the outer centers of the grid.
 
-    :param r: Natural position that we will convert into indices (3-element ndarray or list)
-    :param which_shifts: which grid number (shifts) to use
-    :param round_ind: Whether to round the returned indices to the nearest integers.
-    :param check_bounds: Whether to throw an GridError if r is outside the grid edges
-    :return: 3-element ndarray specifying the indices
-    :raises: GridError
+    Args:
+        r: Natural position that we will convert into indices (3-element ndarray or list)
+        which_shifts: which grid number (`shifts`) to use
+        round_ind: Whether to round the returned indices to the nearest integers.
+        check_bounds: Whether to throw an `GridError` if `r` is outside the grid edges
+
+    Returns:
+        3-element ndarray specifying the indices
+
+    Raises:
+        `GridError` if invalid `which_shifts`
+        `GridError` if `check_bounds` and out of bounds
     """
     r = numpy.squeeze(r)
     if r.size != 3:
