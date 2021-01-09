@@ -42,7 +42,7 @@ def ind2pos(self,
     if check_bounds:
         if round_ind:
             low_bound = 0.0
-            high_bound = -1
+            high_bound = -1.0
         else:
             low_bound = -0.5
             high_bound = -0.5

@@ -44,6 +44,7 @@ def draw_polygons(self,
     # Turn surface_normal into its integer representation
     if isinstance(surface_normal, Direction):
         surface_normal = surface_normal.value
+    assert(isinstance(surface_normal, int))
 
     if surface_normal not in range(3):
         raise GridError('Invalid surface_normal direction')
@@ -96,8 +97,13 @@ def draw_polygons(self,
     # 3) Adjust polygons for center
     polygons = [poly + center[surface] for poly in polygons]
 
+    # ## Generate weighing function
+    def to_3d(vector: numpy.ndarray, val: float = 0.0) -> numpy.ndarray:
+        v_2d = numpy.array(vector, dtype=float)
+        return numpy.insert(v_2d, surface_normal, (val,))
+
     # iterate over grids
-    for (i, grid) in enumerate(self.grids):
+    for i, grid in enumerate(self.grids):
         # ## Evaluate or expand eps[i]
         if callable(eps[i]):
             # meshgrid over the (shifted) domain
@@ -105,17 +111,14 @@ def draw_polygons(self,
             (x0, y0, z0) = numpy.meshgrid(*domain, indexing='ij')
 
             # evaluate on the meshgrid
-            eps[i] = eps[i](x0, y0, z0)
-            if not numpy.isfinite(eps[i]).all():
+            eps_i = eps[i](x0, y0, z0)
+            if not numpy.isfinite(eps_i).all():
                 raise GridError('Non-finite values in eps[%u]' % i)
         elif not is_scalar(eps[i]):
             raise GridError('Unsupported eps[{}]: {}'.format(i, type(eps[i])))
-        # do nothing if eps[i] is scalar non-callable
-
-        # ## Generate weighing function
-        def to_3d(vector: List or numpy.ndarray, val: float=0.0):
-            v_2d = numpy.array(vector, dtype=float)
-            return numpy.insert(v_2d, surface_normal, (val,))
+        else:
+            # eps[i] is scalar non-callable
+            eps_i = eps[i]
 
         w_xy = zeros((bdi_max - bdi_min + 1)[surface].astype(int))
 
@@ -183,7 +186,7 @@ def draw_polygons(self,
 
         # ## Modify the grid
         g_slice = (i,) + tuple(numpy.s_[bdi_min[a]:bdi_max[a] + 1] for a in range(3))
-        self.grids[g_slice] = (1 - w) * self.grids[g_slice] + w * eps[i]
+        self.grids[g_slice] = (1 - w) * self.grids[g_slice] + w * eps_i
 
 
 def draw_polygon(self,
@@ -327,11 +330,9 @@ def draw_extrude_rectangle(self,
     # Turn extrude_direction into its integer representation
     if isinstance(direction, Direction):
         direction = direction.value
-    if abs(direction) not in range(3):
-        raise GridError('Invalid extrude_direction')
+    assert(isinstance(direction, int))
 
     s = numpy.sign(polarity)
-    surface = numpy.delete(range(3), direction)
 
     rectangle = numpy.array(rectangle, dtype=float)
     if s == 0:
@@ -344,12 +345,14 @@ def draw_extrude_rectangle(self,
     center = rectangle.sum(axis=0) / 2.0
     center[direction] += s * distance / 2.0
 
+    surface = numpy.delete(range(3), direction)
+
     dim = numpy.fabs(diff(rectangle, axis=0).T)[surface]
     p = numpy.vstack((numpy.array([-1, -1, 1, 1], dtype=float) * dim[0]/2.0,
                       numpy.array([-1, 1, 1, -1], dtype=float) * dim[1]/2.0)).T
     thickness = distance
 
-    eps_func = [None] * len(self.grids)
+    eps_func = []
     for i, grid in enumerate(self.grids):
         z = self.pos2ind(rectangle[0, :], i, round_ind=False, check_bounds=False)[direction]
 
@@ -367,10 +370,10 @@ def draw_extrude_rectangle(self,
             xyzi = numpy.array([self.pos2ind(qrs, which_shifts=i)
                                 for qrs in zip(xs.flat, ys.flat, zs.flat)], dtype=int)
             # reshape to original shape and keep only in-plane components
-            (qi, ri) = [numpy.reshape(xyzi[:, k], xs.shape) for k in surface]
+            qi, ri = (numpy.reshape(xyzi[:, k], xs.shape) for k in surface)
             return eps[qi, ri]
 
-        eps_func[i] = f_eps
+        eps_func.append(f_eps)
 
     self.draw_polygon(direction, center, p, thickness, eps_func)
 

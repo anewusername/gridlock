@@ -16,7 +16,7 @@ __author__ = 'Jan Petykiewicz'
 eps_callable_type = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
 
 
-class Grid(object):
+class Grid:
     """
     Simulation grid generator intended for electromagnetic simulations.
     Can be used to generate non-uniform rectangular grids (the entire grid
@@ -44,19 +44,32 @@ class Grid(object):
      Because of this, we either assume this 'ghost' cell is the same size as the last
       real cell, or, if `self.periodic[a]` is set to `True`, the same size as the first cell.
     """
+    exyz: List[numpy.ndarray]
+    """Cell edges. Monotonically increasing without duplicates."""
 
-    Yee_Shifts_E = 0.5 * numpy.array([[1, 0, 0],
-                                      [0, 1, 0],
-                                      [0, 0, 1]], dtype=float)    # type: numpy.ndarray
+    grids: numpy.ndarray
+    """epsilon (or mu, or whatever) grids. shape is (num_grids, X, Y, Z)"""
+
+    periodic: List[bool]
+    """For each axis, determines how far the rightmost boundary gets shifted. """
+
+    shifts: numpy.ndarray
+    """Offsets `[[x0, y0, z0], [x1, y1, z1], ...]` for grid `0,1,...`"""
+
+    Yee_Shifts_E: ClassVar[numpy.ndarray] = 0.5 * numpy.array([[1, 0, 0],
+                                                               [0, 1, 0],
+                                                               [0, 0, 1]], dtype=float)
     """Default shifts for Yee grid E-field"""
 
-    Yee_Shifts_H = 0.5 * numpy.array([[0, 1, 1],
-                                      [1, 0, 1],
-                                      [1, 1, 0]], dtype=float)    # type: numpy.ndarray
+    Yee_Shifts_H: ClassVar[numpy.ndarray] = 0.5 * numpy.array([[0, 1, 1],
+                                                               [1, 0, 1],
+                                                               [1, 1, 0]], dtype=float)
     """Default shifts for Yee grid H-field"""
 
-    from .draw import draw_polygons, draw_polygon, draw_slab, draw_cuboid, \
-           draw_cylinder, draw_extrude_rectangle
+    from .draw import (
+        draw_polygons, draw_polygon, draw_slab, draw_cuboid,
+        draw_cylinder, draw_extrude_rectangle,
+        )
     from .read import get_slice, visualize_slice, visualize_isosurface
     from .position import ind2pos, pos2ind
 
@@ -237,23 +250,17 @@ class Grid(object):
         Raises:
             `GridError` on invalid input
         """
-        self.exyz = [numpy.unique(pixel_edge_coordinates[i]) for i in range(3)]     # type: List[numpy.ndarray]
-        """Cell edges. Monotonically increasing without duplicates."""
-
-        self.grids = None           # type: numpy.ndarray
-        """epsilon (or mu, or whatever) grids. shape is (num_grids, X, Y, Z)"""
+        self.exyz = [numpy.unique(pixel_edge_coordinates[i]) for i in range(3)]
+        self.shifts = numpy.array(shifts, dtype=float)
 
         for i in range(3):
             if len(self.exyz[i]) != len(pixel_edge_coordinates[i]):
                 warnings.warn('Dimension {} had duplicate edge coordinates'.format(i), stacklevel=2)
 
-        if is_scalar(periodic):
-            periodic = [periodic] * 3
-        self.periodic = periodic       # type: List[bool]
-        """For each axis, determines how far the rightmost boundary gets shifted. """
-
-        self.shifts = numpy.array(shifts, dtype=float)      # type: numpy.ndarray
-        """Offsets `[[x0, y0, z0], [x1, y1, z1], ...]` for grid `0,1,...`"""
+        if isinstance(periodic, bool):
+            self.periodic = [periodic] * 3
+        else:
+            self.periodic = list(periodic)
 
         if len(self.shifts.shape) != 2:
             raise GridError('Misshapen shifts: shifts must have two axes! '
@@ -276,7 +283,7 @@ class Grid(object):
             raise GridError('Number of grids exceeds number of shifts (%u)' % num_shifts)
 
         grids_shape = hstack((num_grids, self.shape))
-        if is_scalar(initial):
+        if isinstance(initial, (float, int)):
             if isinstance(initial, int):
                 warnings.warn('Initial value is an int, grids will be integer-typed!', stacklevel=2)
             self.grids = numpy.full(grids_shape, initial)
