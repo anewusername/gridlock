@@ -153,7 +153,7 @@ def draw_polygons(self,
         # 2) Generate weights in z-direction
         w_z = numpy.zeros(((bdi_max - bdi_min + 1)[surface_normal], ))
 
-        def get_zi(offset):
+        def get_zi(offset, i=i, w_z=w_z):
             edges = self.shifted_exyz(i)[surface_normal]
             point = center[surface_normal] + offset
             grid_coord = numpy.digitize(point, edges) - 1
@@ -365,7 +365,7 @@ def draw_extrude_rectangle(self,
         ind[direction] += 1
         eps += mult[1] * grid[ind]
 
-        def f_eps(xs, ys, zs):
+        def f_eps(xs, ys, zs, i=i, eps=eps) -> numpy.ndarray:
             # transform from natural position to index
             xyzi = numpy.array([self.pos2ind(qrs, which_shifts=i)
                                 for qrs in zip(xs.flat, ys.flat, zs.flat)], dtype=int)
