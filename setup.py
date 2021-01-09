@@ -18,7 +18,7 @@ setup(name='gridlock',
       url='https://mpxd.net/code/jan/gridlock',
       packages=find_packages(),
       package_data={
-          'gridlock': [],
+          'gridlock': ['py.typed'],
       },
       install_requires=[
             'numpy',
