@@ -361,9 +361,9 @@ def draw_extrude_rectangle(self,
         fpart = z - floor(z)
         mult = [1-fpart, fpart][::s]  # reverses if s negative
 
-        eps = mult[0] * grid[ind]
+        eps = mult[0] * grid[tuple(ind)]
         ind[direction] += 1
-        eps += mult[1] * grid[ind]
+        eps += mult[1] * grid[tuple(ind)]
 
         def f_eps(xs, ys, zs, i=i, eps=eps) -> numpy.ndarray:
             # transform from natural position to index
