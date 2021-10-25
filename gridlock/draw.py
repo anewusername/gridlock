@@ -9,6 +9,12 @@ from float_raster import raster
 from . import GridError
 
 
+# NOTE: Maybe it would make sense to create a GridDrawer class
+#       which would hold both the `Grid` itself and `cell_data`
+#       and could be used to call multiple `draw_*` methods
+#       without having to pass `cell_data` again each time?
+
+
 eps_callable_t = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
 
 
@@ -28,7 +34,7 @@ def draw_polygons(self,
         surface_normal: Axis normal to the plane we're drawing on. Integer in `range(3)`.
         center: 3-element ndarray or list specifying an offset applied to all the polygons
         polygons: List of Nx2 or Nx3 ndarrays, each specifying the vertices of a polygon
-            (non-closed, clockwise). If Nx3, the surface_normal coordinate is ignored. Each
+            (non-closed, clockwise). If Nx3, the `surface_normal` coordinate is ignored. Each
             polygon must have at least 3 vertices.
         thickness: Thickness of the layer to draw
         eps: Value to draw with ('epsilon'). Can be scalar, callable, or a list
@@ -219,7 +225,7 @@ def draw_slab(self,
     Args:
         cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
         surface_normal: Axis normal to the plane we're drawing on. Integer in `range(3)`.
-        center: Surface_normal coordinate at the center of the slab
+        center: `surface_normal` coordinate value at the center of the slab
         thickness: Thickness of the layer to draw
         eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
     """
