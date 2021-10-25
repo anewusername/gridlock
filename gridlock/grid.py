@@ -279,7 +279,7 @@ class Grid:
 
         for i in range(3):
             if len(self.exyz[i]) != len(pixel_edge_coordinates[i]):
-                warnings.warn('Dimension {} had duplicate edge coordinates'.format(i), stacklevel=2)
+                warnings.warn(f'Dimension {i} had duplicate edge coordinates', stacklevel=2)
 
         if isinstance(periodic, bool):
             self.periodic = [periodic] * 3
@@ -288,10 +288,10 @@ class Grid:
 
         if len(self.shifts.shape) != 2:
             raise GridError('Misshapen shifts: shifts must have two axes! '
-                            ' The given shifts has shape {}'.format(self.shifts.shape))
+                            f' The given shifts has shape {self.shifts.shape}')
         if self.shifts.shape[1] != 3:
             raise GridError('Misshapen shifts; second axis size should be 3,'
-                            ' shape is {}'.format(self.shifts.shape))
+                            f' shape is {self.shifts.shape}')
 
         if (numpy.abs(self.shifts) > 1).any():
             raise GridError('Only shifts in the range [-1, 1] are currently supported')

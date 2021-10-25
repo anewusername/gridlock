@@ -48,7 +48,7 @@ def draw_polygons(self,
     surface = numpy.delete(range(3), surface_normal)
 
     for i, polygon in enumerate(polygons):
-        malformed = 'Malformed polygon: (%i)' % i
+        malformed = f'Malformed polygon: ({i})'
         if polygon.shape[1] not in (2, 3):
                 raise GridError(malformed + 'must be a Nx2 or Nx3 ndarray')
         if polygon.shape[1] == 3:
@@ -106,9 +106,9 @@ def draw_polygons(self,
             # evaluate on the meshgrid
             eps_i = eps[i](x0, y0, z0)
             if not numpy.isfinite(eps_i).all():
-                raise GridError('Non-finite values in eps[%u]' % i)
-            raise GridError('Unsupported eps[{}]: {}'.format(i, type(eps[i])))
+                raise GridError(f'Non-finite values in eps[{i}]')
         elif numpy.size(eps[i]) != 1:
+            raise GridError(f'Unsupported eps[{i}]: {type(eps[i])}')
         else:
             # eps[i] is scalar non-callable
             eps_i = eps[i]
@@ -232,7 +232,7 @@ def draw_slab(self,
         if len(center) == 3:
             center = center[surface_normal]
         else:
-            raise GridError('Bad center: {}'.format(center))
+            raise GridError(f'Bad center: {center}')
 
     # Find center of slab
     center_shift = self.center
@@ -331,7 +331,7 @@ def draw_extrude_rectangle(self,
     if s == 0:
         raise GridError('0 is not a valid polarity')
     if direction not in range(3):
-        raise GridError('Invalid direction: {}'.format(direction))
+        raise GridError(f'Invalid direction: {direction}')
     if rectangle[0, direction] != rectangle[1, direction]:
         raise GridError('Rectangle entries along extrusion direction do not match.')
 

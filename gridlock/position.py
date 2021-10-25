@@ -46,7 +46,7 @@ def ind2pos(self,
             low_bound = -0.5
             high_bound = -0.5
         if (ind < low_bound).any() or (ind > self.shape - high_bound).any():
-            raise GridError('Position outside of grid: {}'.format(ind))
+            raise GridError(f'Position outside of grid: {ind}')
 
     if round_ind:
         rind = numpy.clip(numpy.round(ind).astype(int), 0, self.shape - 1)
@@ -84,17 +84,17 @@ def pos2ind(self,
     """
     r = numpy.squeeze(r)
     if r.size != 3:
-        raise GridError('r must be 3-element vector: {}'.format(r))
+        raise GridError(f'r must be 3-element vector: {r}')
 
     if (which_shifts is not None) and (which_shifts >= self.shifts.shape[0]):
-        raise GridError('Invalid which_shifts: {}'.format(which_shifts))
+        raise GridError(f'Invalid which_shifts: {which_shifts}')
 
     sexyz = self.shifted_exyz(which_shifts)
 
     if check_bounds:
         for a in range(3):
             if self.shape[a] > 1 and (r[a] < sexyz[a][0] or r[a] > sexyz[a][-1]):
-                raise GridError('Position[{}] outside of grid!'.format(a))
+                raise GridError(f'Position[{a}] outside of grid!')
 
     grid_pos = numpy.zeros((3,))
     for a in range(3):
