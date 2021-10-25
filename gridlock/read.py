@@ -5,7 +5,6 @@ from typing import Dict, Optional, Union, Any
 
 import numpy        # type: ignore
 
-from ._helpers import is_scalar
 from . import GridError
 
 # .visualize_* uses matplotlib
@@ -34,14 +33,14 @@ def get_slice(self,
     Returns:
         Array containing the portion of the grid.
     """
-    if not is_scalar(center) and numpy.isreal(center):
+    if numpy.size(center) != 1 or not numpy.isreal(center):
         raise GridError('center must be a real scalar')
 
     sp = round(sample_period)
     if sp <= 0:
         raise GridError('sample_period must be positive')
 
-    if not is_scalar(which_shifts) or which_shifts < 0:
+    if numpy.size(which_shifts) != 1 or which_shifts < 0:
         raise GridError('Invalid which_shifts')
 
     if surface_normal not in range(3):

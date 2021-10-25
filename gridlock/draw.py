@@ -6,7 +6,6 @@ from typing import List, Optional, Union, Sequence, Callable
 import numpy        # type: ignore
 from float_raster import raster
 
-from ._helpers import is_scalar
 from . import GridError
 
 
@@ -58,8 +57,8 @@ def draw_polygons(self,
         if not polygon.shape[0] > 2:
             raise GridError(malformed + 'must consist of more than 2 points')
         if polygon.ndim > 2 and not numpy.unique(polygon[:, surface_normal]).size == 1:
-            raise GridError(malformed + 'must be in plane with surface normal %s'
-                            % 'xyz'[surface_normal])
+            raise GridError(malformed + 'must be in plane with surface normal '
+                            + 'xyz'[surface_normal])
 
     # Broadcast eps where necessary
     if numpy.size(eps) == 1:
@@ -108,8 +107,8 @@ def draw_polygons(self,
             eps_i = eps[i](x0, y0, z0)
             if not numpy.isfinite(eps_i).all():
                 raise GridError('Non-finite values in eps[%u]' % i)
-        elif not is_scalar(eps[i]):
             raise GridError('Unsupported eps[{}]: {}'.format(i, type(eps[i])))
+        elif numpy.size(eps[i]) != 1:
         else:
             # eps[i] is scalar non-callable
             eps_i = eps[i]
@@ -228,7 +227,7 @@ def draw_slab(self,
     if surface_normal not in range(3):
         raise GridError('Invalid surface_normal direction')
 
-    if not is_scalar(center):
+    if numpy.size(center) != 1:
         center = numpy.squeeze(center)
         if len(center) == 3:
             center = center[surface_normal]

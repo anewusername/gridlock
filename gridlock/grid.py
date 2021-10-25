@@ -7,7 +7,6 @@ import pickle
 import warnings
 import copy
 
-from ._helpers import is_scalar
 from . import GridError
 
 
