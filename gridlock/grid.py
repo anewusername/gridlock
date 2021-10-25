@@ -237,14 +237,14 @@ class Grid:
             raise GridError('Autoshifting requires exactly 3 grids')
         return [self.shifted_dxyz(which_shifts=a)[a] for a in range(3)]
 
-    def allocate(self, fill_value: Optional[float] = 1.0, dtype=numpy.float64) -> numpy.ndarray:
+    def allocate(self, fill_value: Optional[float] = 1.0, dtype=numpy.float32) -> numpy.ndarray:
         """
         Allocate an ndarray for storing grid data.
 
         Args:
             fill_value: Value to initialize the grid to. If None, an
                 uninitialized array is returned.
-            dtype: Numpy dtype for the array. Default is `numpy.float64`.
+            dtype: Numpy dtype for the array. Default is `numpy.float32`.
 
         Returns:
             The allocated array
