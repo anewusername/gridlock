@@ -81,7 +81,7 @@ class Grid:
         Returns:
             List of 3 ndarrays of cell sizes
         """
-        return [diff(self.exyz[a]) for a in range(3)]
+        return [numpy.diff(ee) for ee in self.exyz]
 
     @property
     def xyz(self) -> List[numpy.ndarray]:
@@ -117,7 +117,7 @@ class Grid:
             list of [dxs, dys, dzs] with each element same length as elements of `self.xyz`
         """
         el = [0 if p else -1 for p in self.periodic]
-        return [hstack((self.dxyz[a], self.dxyz[a][e])) for a, e in zip(range(3), el)]
+        return [numpy.hstack((self.dxyz[a], self.dxyz[a][e])) for a, e in zip(range(3), el)]
 
     @property
     def center(self) -> numpy.ndarray:

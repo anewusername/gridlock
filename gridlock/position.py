@@ -4,7 +4,6 @@ Position-related methods for Grid class
 from typing import List, Optional
 
 import numpy        # type: ignore
-from numpy import zeros
 
 from . import GridError
 
@@ -97,7 +96,7 @@ def pos2ind(self,
             if self.shape[a] > 1 and (r[a] < sexyz[a][0] or r[a] > sexyz[a][-1]):
                 raise GridError('Position[{}] outside of grid!'.format(a))
 
-    grid_pos = zeros((3,))
+    grid_pos = numpy.zeros((3,))
     for a in range(3):
         xi = numpy.digitize(r[a], sexyz[a]) - 1 # Figure out which cell we're in
         xi_clipped = numpy.clip(xi, 0, sexyz[a].size - 2)  # Clip back into grid bounds

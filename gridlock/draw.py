@@ -4,8 +4,6 @@ Drawing-related methods for Grid class
 from typing import List, Optional, Union, Sequence, Callable
 
 import numpy        # type: ignore
-from numpy import diff, floor, ceil, zeros, hstack, newaxis
-
 from float_raster import raster
 
 from . import GridError, Direction
@@ -91,8 +89,8 @@ def draw_polygons(self,
     s_max = self.shifts.max(axis=0)
     bdi_min = self.pos2ind(bd_min + s_min, None, round_ind=False, check_bounds=False) - buf
     bdi_max = self.pos2ind(bd_max + s_max, None, round_ind=False, check_bounds=False) + buf
-    bdi_min = numpy.maximum(floor(bdi_min), 0).astype(int)
-    bdi_max = numpy.minimum(ceil(bdi_max), self.shape - 1).astype(int)
+    bdi_min = numpy.maximum(numpy.floor(bdi_min), 0).astype(int)
+    bdi_max = numpy.minimum(numpy.ceil(bdi_max), self.shape - 1).astype(int)
 
     # 3) Adjust polygons for center
     polygons = [poly + center[surface] for poly in polygons]
@@ -120,7 +118,7 @@ def draw_polygons(self,
             # eps[i] is scalar non-callable
             eps_i = eps[i]
 
-        w_xy = zeros((bdi_max - bdi_min + 1)[surface].astype(int))
+        w_xy = numpy.zeros((bdi_max - bdi_min + 1)[surface].astype(int))
 
         # Draw each polygon separately
         for polygon in polygons:
@@ -182,7 +180,7 @@ def draw_polygons(self,
             w_z[zi_bot] = zi_top_f - zi_bot_f
 
         # 3) Generate total weight function
-        w = (w_xy[:, :, newaxis] * w_z).transpose(numpy.insert([0, 1], surface_normal, (2,)))
+        w = (w_xy[:, :, None] * w_z).transpose(numpy.insert([0, 1], surface_normal, (2,)))
 
         # ## Modify the grid
         g_slice = (i,) + tuple(numpy.s_[bdi_min[a]:bdi_max[a] + 1] for a in range(3))
@@ -308,8 +306,8 @@ def draw_cylinder(self,
     theta = numpy.linspace(0, 2*numpy.pi, num_points, endpoint=False)
     x = radius * numpy.sin(theta)
     y = radius * numpy.cos(theta)
-    polygon = hstack((x[:, newaxis], y[:, newaxis]))
     self.draw_polygon(surface_normal, center, polygon, thickness, eps)
+    polygon = numpy.hstack((x[:, None], y[:, None]))
 
 
 def draw_extrude_rectangle(self,
@@ -347,7 +345,7 @@ def draw_extrude_rectangle(self,
 
     surface = numpy.delete(range(3), direction)
 
-    dim = numpy.fabs(diff(rectangle, axis=0).T)[surface]
+    dim = numpy.fabs(numpy.diff(rectangle, axis=0).T)[surface]
     p = numpy.vstack((numpy.array([-1, -1, 1, 1], dtype=float) * dim[0]/2.0,
                       numpy.array([-1, 1, 1, -1], dtype=float) * dim[1]/2.0)).T
     thickness = distance
@@ -356,9 +354,9 @@ def draw_extrude_rectangle(self,
     for i, grid in enumerate(self.grids):
         z = self.pos2ind(rectangle[0, :], i, round_ind=False, check_bounds=False)[direction]
 
-        ind = [int(floor(z)) if i == direction else slice(None) for i in range(3)]
+        ind = [int(numpy.floor(z)) if i == direction else slice(None) for i in range(3)]
 
-        fpart = z - floor(z)
+        fpart = z - numpy.floor(z)
         mult = [1-fpart, fpart][::s]  # reverses if s negative
 
         eps = mult[0] * grid[tuple(ind)]

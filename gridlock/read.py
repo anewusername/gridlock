@@ -4,7 +4,6 @@ Readback and visualization methods for Grid class
 from typing import Dict, Optional, Union, Any
 
 import numpy        # type: ignore
-from numpy import floor, ceil, zeros
 
 from . import GridError, Direction
 from ._helpers import is_scalar
@@ -56,9 +55,9 @@ def get_slice(self,
     center3 = numpy.insert([0, 0], surface_normal, (center,))
     center_index = self.pos2ind(center3, which_shifts,
                                 round_ind=False, check_bounds=False)[surface_normal]
-    centers = numpy.unique([floor(center_index), ceil(center_index)]).astype(int)
+    centers = numpy.unique([numpy.floor(center_index), numpy.ceil(center_index)]).astype(int)
     if len(centers) == 2:
-        fpart = center_index - floor(center_index)
+        fpart = center_index - numpy.floor(center_index)
         w = [1 - fpart, fpart]  # longer distance -> less weight
     else:
         w = [1]
@@ -68,7 +67,7 @@ def get_slice(self,
         raise GridError('Coordinate of selected plane must be within simulation domain')
 
     # Extract grid values from planes above and below visualized slice
-    sliced_grid = zeros(self.shape[surface])
+    sliced_grid = numpy.zeros(self.shape[surface])
     for ci, weight in zip(centers, w):
         s = tuple(ci if a == surface_normal else numpy.s_[::sp] for a in range(3))
         sliced_grid += weight * self.grids[which_shifts][tuple(s)]
