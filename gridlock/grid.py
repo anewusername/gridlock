@@ -314,15 +314,19 @@ class Grid:
         g.__dict__.update(tmp_dict)
         return g
 
-    def save(self, filename: str):
+    def save(self: T, filename: str) -> T:
         """
         Save to file.
 
         Args:
             filename: Filename to save to.
+
+        Returns:
+            self
         """
         with open(filename, 'wb') as f:
             pickle.dump(self.__dict__, f, protocol=2)
+        return self
 
     def copy(self: T) -> T:
         """
