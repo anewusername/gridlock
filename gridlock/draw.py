@@ -6,15 +6,16 @@ from typing import List, Optional, Union, Sequence, Callable
 import numpy        # type: ignore
 from float_raster import raster
 
-from . import GridError, Direction
 from ._helpers import is_scalar
+from . import GridError
 
 
 eps_callable_t = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
 
 
 def draw_polygons(self,
-                  surface_normal: Union[Direction, int],
+                  cell_data: numpy.ndarray,
+                  surface_normal: int,
                   center: numpy.ndarray,
                   polygons: Sequence[numpy.ndarray],
                   thickness: float,
@@ -24,8 +25,8 @@ def draw_polygons(self,
     Draw polygons on an axis-aligned plane.
 
     Args:
-        surface_normal: Axis normal to the plane we're drawing on. Can be a `Direction` or
-            integer in `range(3)`
+        cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
+        surface_normal: Axis normal to the plane we're drawing on. Integer in `range(3)`.
         center: 3-element ndarray or list specifying an offset applied to all the polygons
         polygons: List of Nx2 or Nx3 ndarrays, each specifying the vertices of a polygon
             (non-closed, clockwise). If Nx3, the surface_normal coordinate is ignored. Each
@@ -39,11 +40,6 @@ def draw_polygons(self,
     Raises:
         GridError
     """
-    # Turn surface_normal into its integer representation
-    if isinstance(surface_normal, Direction):
-        surface_normal = surface_normal.value
-    assert(isinstance(surface_normal, int))
-
     if surface_normal not in range(3):
         raise GridError('Invalid surface_normal direction')
 
@@ -66,8 +62,8 @@ def draw_polygons(self,
                             % 'xyz'[surface_normal])
 
     # Broadcast eps where necessary
-    if is_scalar(eps):
-        eps = [eps] * len(self.grids)
+    if numpy.size(eps) == 1:
+        eps = [eps] * len(cell_data)
     elif isinstance(eps, numpy.ndarray):
         raise GridError('ndarray not supported for eps')
 
@@ -101,7 +97,7 @@ def draw_polygons(self,
         return numpy.insert(v_2d, surface_normal, (val,))
 
     # iterate over grids
-    for i, grid in enumerate(self.grids):
+    for i, grid in enumerate(cell_data):
         # ## Evaluate or expand eps[i]
         if callable(eps[i]):
             # meshgrid over the (shifted) domain
@@ -184,11 +180,12 @@ def draw_polygons(self,
 
         # ## Modify the grid
         g_slice = (i,) + tuple(numpy.s_[bdi_min[a]:bdi_max[a] + 1] for a in range(3))
-        self.grids[g_slice] = (1 - w) * self.grids[g_slice] + w * eps_i
+        cell_data[g_slice] = (1 - w) * cell_data[g_slice] + w * eps_i
 
 
 def draw_polygon(self,
-                 surface_normal: Union[Direction, int],
+                 cell_data: numpy.ndarray,
+                 surface_normal: int,
                  center: numpy.ndarray,
                  polygon: numpy.ndarray,
                  thickness: float,
@@ -198,8 +195,8 @@ def draw_polygon(self,
     Draw a polygon on an axis-aligned plane.
 
     Args:
-        surface_normal: Axis normal to the plane we're drawing on. Can be a Direction or
-            integer in range(3)
+        cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
+        surface_normal: Axis normal to the plane we're drawing on. Integer in `range(3)`.
         center: 3-element ndarray or list specifying an offset applied to the polygon
         polygon: Nx2 or Nx3 ndarray specifying the vertices of a polygon (non-closed,
             clockwise). If Nx3, the surface_normal coordinate is ignored. Must have at
@@ -207,11 +204,12 @@ def draw_polygon(self,
         thickness: Thickness of the layer to draw
         eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
     """
-    self.draw_polygons(surface_normal, center, [polygon], thickness, eps)
+    self.draw_polygons(cell_data, surface_normal, center, [polygon], thickness, eps)
 
 
 def draw_slab(self,
-              surface_normal: Union[Direction, int],
+              cell_data: numpy.ndarray,
+              surface_normal: int,
               center: numpy.ndarray,
               thickness: float,
               eps: Union[List[Union[float, eps_callable_t]], float, eps_callable_t],
@@ -220,15 +218,13 @@ def draw_slab(self,
     Draw an axis-aligned infinite slab.
 
     Args:
-        surface_normal: Axis normal to the plane we're drawing on. Can be a `Direction` or
-            integer in `range(3)`
+        cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
+        surface_normal: Axis normal to the plane we're drawing on. Integer in `range(3)`.
         center: Surface_normal coordinate at the center of the slab
         thickness: Thickness of the layer to draw
         eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
     """
     # Turn surface_normal into its integer representation
-    if isinstance(surface_normal, Direction):
-        surface_normal = surface_normal.value
     if surface_normal not in range(3):
         raise GridError('Invalid surface_normal direction')
 
@@ -258,10 +254,11 @@ def draw_slab(self,
                      [xyz_max[0], xyz_min[1]],
                      [xyz_min[0], xyz_min[1]]], dtype=float)
 
-    self.draw_polygon(surface_normal, center_shift, p, thickness, eps)
+    self.draw_polygon(cell_data, surface_normal, center_shift, p, thickness, eps)
 
 
 def draw_cuboid(self,
+                cell_data: numpy.ndarray,
                 center: numpy.ndarray,
                 dimensions: numpy.ndarray,
                 eps: Union[List[Union[float, eps_callable_t]], float, eps_callable_t],
@@ -270,6 +267,7 @@ def draw_cuboid(self,
     Draw an axis-aligned cuboid
 
     Args:
+        cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
         center: 3-element ndarray or list specifying the cuboid's center
         dimensions: 3-element list or ndarray containing the x, y, and z edge-to-edge
              sizes of the cuboid
@@ -280,11 +278,12 @@ def draw_cuboid(self,
                      [+dimensions[0], -dimensions[1]],
                      [-dimensions[0], -dimensions[1]]], dtype=float) / 2.0
     thickness = dimensions[2]
-    self.draw_polygon(Direction.z, center, p, thickness, eps)
+    self.draw_polygon(cell_data, 2, center, p, thickness, eps)
 
 
 def draw_cylinder(self,
-                  surface_normal: Union[Direction, int],
+                  cell_data: numpy.ndarray,
+                  surface_normal: int,
                   center: numpy.ndarray,
                   radius: float,
                   thickness: float,
@@ -295,8 +294,8 @@ def draw_cylinder(self,
     Draw an axis-aligned cylinder. Approximated by a num_points-gon
 
     Args:
-        surface_normal: Axis normal to the plane we're drawing on. Can be a `Direction` or
-            integer in `range(3)`
+        cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
+        surface_normal: Axis normal to the plane we're drawing on. Integer in `range(3)`.
         center: 3-element ndarray or list specifying the cylinder's center
         radius: cylinder radius
         thickness: Thickness of the layer to draw
@@ -306,13 +305,14 @@ def draw_cylinder(self,
     theta = numpy.linspace(0, 2*numpy.pi, num_points, endpoint=False)
     x = radius * numpy.sin(theta)
     y = radius * numpy.cos(theta)
-    self.draw_polygon(surface_normal, center, polygon, thickness, eps)
     polygon = numpy.hstack((x[:, None], y[:, None]))
+    self.draw_polygon(cell_data, surface_normal, center, polygon, thickness, eps)
 
 
 def draw_extrude_rectangle(self,
+                           cell_data: numpy.ndarray,
                            rectangle: numpy.ndarray,
-                           direction: Union[Direction, int],
+                           direction: int,
                            polarity: int,
                            distance: float,
                            ) -> None:
@@ -320,16 +320,12 @@ def draw_extrude_rectangle(self,
     Extrude a rectangle of a previously-drawn structure along an axis.
 
     Args:
+        cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
         rectangle: 2x3 ndarray or list specifying the rectangle's corners
-        direction: Direction to extrude in. Direction enum or int in range(3)
+        direction: Direction to extrude in. Integer in `range(3)`.
         polarity: +1 or -1, direction along axis to extrude in
         distance: How far to extrude
     """
-    # Turn extrude_direction into its integer representation
-    if isinstance(direction, Direction):
-        direction = direction.value
-    assert(isinstance(direction, int))
-
     s = numpy.sign(polarity)
 
     rectangle = numpy.array(rectangle, dtype=float)
@@ -351,7 +347,7 @@ def draw_extrude_rectangle(self,
     thickness = distance
 
     eps_func = []
-    for i, grid in enumerate(self.grids):
+    for i, grid in enumerate(cell_data):
         z = self.pos2ind(rectangle[0, :], i, round_ind=False, check_bounds=False)[direction]
 
         ind = [int(numpy.floor(z)) if i == direction else slice(None) for i in range(3)]
@@ -373,5 +369,5 @@ def draw_extrude_rectangle(self,
 
         eps_func.append(f_eps)
 
-    self.draw_polygon(direction, center, p, thickness, eps_func)
+    self.draw_polygon(cell_data, direction, center, p, thickness, eps_func)
 

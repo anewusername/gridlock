@@ -16,7 +16,6 @@ Dependencies:
 - skimage               [Grid.visualize_isosurface()]
 """
 from .error import GridError
-from .direction import Direction
 from .grid import Grid
 
 __author__ = 'Jan Petykiewicz'

@@ -5,8 +5,8 @@ from typing import Dict, Optional, Union, Any
 
 import numpy        # type: ignore
 
-from . import GridError, Direction
 from ._helpers import is_scalar
+from . import GridError
 
 # .visualize_* uses matplotlib
 # .visualize_isosurface uses skimage
@@ -14,7 +14,8 @@ from ._helpers import is_scalar
 
 
 def get_slice(self,
-              surface_normal: Union[Direction, int],
+              cell_data: numpy.ndarray,
+              surface_normal: int,
               center: float,
               which_shifts: int = 0,
               sample_period: int = 1
@@ -24,8 +25,8 @@ def get_slice(self,
     Interpolates if given a position between two planes.
 
     Args:
-        surface_normal: Axis normal to the plane we're displaying. Can be a `Direction` or
-            integer in `range(3)`
+        cell_data: Cell data to slice
+        surface_normal: Axis normal to the plane we're displaying. Integer in `range(3)`.
         center: Scalar specifying position along surface_normal axis.
         which_shifts: Which grid to display. Default is the first grid (0).
         sample_period: Period for down-sampling the image. Default 1 (disabled)
@@ -43,9 +44,6 @@ def get_slice(self,
     if not is_scalar(which_shifts) or which_shifts < 0:
         raise GridError('Invalid which_shifts')
 
-    # Turn surface_normal into its integer representation
-    if isinstance(surface_normal, Direction):
-        surface_normal = surface_normal.value
     if surface_normal not in range(3):
         raise GridError('Invalid surface_normal direction')
 
@@ -70,7 +68,7 @@ def get_slice(self,
     sliced_grid = numpy.zeros(self.shape[surface])
     for ci, weight in zip(centers, w):
         s = tuple(ci if a == surface_normal else numpy.s_[::sp] for a in range(3))
-        sliced_grid += weight * self.grids[which_shifts][tuple(s)]
+        sliced_grid += weight * cell_data[which_shifts][tuple(s)]
 
     # Remove extra dimensions
     sliced_grid = numpy.squeeze(sliced_grid)
@@ -79,7 +77,8 @@ def get_slice(self,
 
 
 def visualize_slice(self,
-                    surface_normal: Union[Direction, int],
+                    cell_data: numpy.ndarray,
+                    surface_normal: int,
                     center: float,
                     which_shifts: int = 0,
                     sample_period: int = 1,
@@ -91,8 +90,7 @@ def visualize_slice(self,
     Interpolates if given a position between two planes.
 
     Args:
-        surface_normal: Axis normal to the plane we're displaying. Can be a `Direction` or
-            integer in `range(3)`
+        surface_normal: Axis normal to the plane we're displaying. Integer in `range(3)`.
         center: Scalar specifying position along surface_normal axis.
         which_shifts: Which grid to display. Default is the first grid (0).
         sample_period: Period for down-sampling the image. Default 1 (disabled)
@@ -100,14 +98,11 @@ def visualize_slice(self,
     """
     from matplotlib import pyplot
 
-    # Set surface normal to its integer value
-    if isinstance(surface_normal, Direction):
-        surface_normal = surface_normal.value
-
     if pcolormesh_args is None:
         pcolormesh_args = {}
 
-    grid_slice = self.get_slice(surface_normal=surface_normal,
+    grid_slice = self.get_slice(cell_data=cell_data,
+                                surface_normal=surface_normal,
                                 center=center,
                                 which_shifts=which_shifts,
                                 sample_period=sample_period)
@@ -129,6 +124,7 @@ def visualize_slice(self,
 
 
 def visualize_isosurface(self,
+                         cell_data: numpy.ndarray,
                          level: Optional[float] = None,
                          which_shifts: int = 0,
                          sample_period: int = 1,
@@ -139,6 +135,7 @@ def visualize_isosurface(self,
     Draw an isosurface plot of the device.
 
     Args:
+        cell_data: Cell data to visualize
         level: Value at which to find isosurface. Default (None) uses mean value in grid.
         which_shifts: Which grid to display. Default is the first grid (0).
         sample_period: Period for down-sampling the image. Default 1 (disabled)
@@ -150,8 +147,8 @@ def visualize_isosurface(self,
     # Claims to be unused, but needed for subplot(projection='3d')
     from mpl_toolkits.mplot3d import Axes3D
 
-    # Get data from self.grids
-    grid = self.grids[which_shifts][::sample_period, ::sample_period, ::sample_period]
+    # Get data from cell_data
+    grid = cell_data[which_shifts][::sample_period, ::sample_period, ::sample_period]
     if level is None:
         level = grid.mean()
 

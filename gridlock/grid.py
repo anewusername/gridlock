@@ -7,8 +7,8 @@ import pickle
 import warnings
 import copy
 
-from . import GridError, Direction
 from ._helpers import is_scalar
+from . import GridError
 
 
 __author__ = 'Jan Petykiewicz'
@@ -18,12 +18,18 @@ eps_callable_type = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], nump
 
 class Grid:
     """
-    Simulation grid generator intended for electromagnetic simulations.
-    Can be used to generate non-uniform rectangular grids (the entire grid
+    Simulation grid metadata for finite-difference simulations.
+
+      Can be used to generate non-uniform rectangular grids (the entire grid
     is generated based on the coordinates of the boundary points). Also does
     straightforward natural <-> grid unit conversion.
 
-    `self.grids[i][a,b,c]` contains the value of epsilon for the cell located around
+      This class handles data describing the grid, and should be paired with a
+    (separate) ndarray that contains the actual data in each cell. The `allocate()`
+    method can be used to create this ndarray.
+
+    The resulting `cell_data[i, a, b, c]` should correspond to the value in the
+    `i`-th grid, in the cell centered around
     ```
           (xyz[0][a] + dxyz[0][a] * shifts[i, 0],
            xyz[1][b] + dxyz[1][b] * shifts[i, 1],
@@ -46,9 +52,6 @@ class Grid:
     """
     exyz: List[numpy.ndarray]
     """Cell edges. Monotonically increasing without duplicates."""
-
-    grids: numpy.ndarray
-    """epsilon (or mu, or whatever) grids. shape is (num_grids, X, Y, Z)"""
 
     periodic: List[bool]
     """For each axis, determines how far the rightmost boundary gets shifted. """
@@ -102,6 +105,20 @@ class Grid:
             ndarray of [x_centers.size, y_centers.size, z_centers.size]
         """
         return numpy.array([coord.size - 1 for coord in self.exyz], dtype=int)
+
+    @property
+    def num_grids(self) -> int:
+        """
+        The number of grids (number of shifts)
+        """
+        return self.shifts.shape[0]
+
+    @property
+    def cell_data_shape(self):
+        """
+        The shape of the cell_data ndarray (num_grids, *self.shape).
+        """
+        return numpy.hstack((self.num_grids, self.shape))
 
     @property
     def dxyz_with_ghost(self) -> List[numpy.ndarray]:
@@ -218,16 +235,30 @@ class Grid:
         Returns:
             `[grid.shifted_dxyz(which_shifts=a)[a] for a in range(3)]`
         """
-        if len(self.grids) != 3:
-            raise GridError('autoshifting requires exactly 3 grids')
+        if self.num_grids != 3:
+            raise GridError('Autoshifting requires exactly 3 grids')
         return [self.shifted_dxyz(which_shifts=a)[a] for a in range(3)]
 
+    def allocate(self, fill_value: Optional[float] = 1.0, dtype=numpy.float64) -> numpy.ndarray:
+        """
+        Allocate an ndarray for storing grid data.
+
+        Args:
+            fill_value: Value to initialize the grid to. If None, an
+                uninitialized array is returned.
+            dtype: Numpy dtype for the array. Default is `numpy.float64`.
+
+        Returns:
+            The allocated array
+        """
+        if fill_value is None:
+            return numpy.empty(self.cell_data_shape)
+        else:
+            return numpy.full(self.cell_data_shape, fill_value)
 
     def __init__(self,
                  pixel_edge_coordinates: Sequence[numpy.ndarray],
                  shifts: numpy.ndarray = Yee_Shifts_E,
-                 initial: Union[float, numpy.ndarray] = 1.0,
-                 num_grids: Optional[int] = None,
                  periodic: Union[bool, Sequence[bool]] = False,
                  ) -> None:
         """
@@ -238,12 +269,6 @@ class Grid:
                 x=`x1`, the second has edges x=`x1` and x=`x2`, etc.)
             shifts: Nx3 array containing `[x, y, z]` offsets for each of N grids.
                 E-field Yee shifts are used by default.
-            initial: Grids are initialized to this value. If scalar, all grids are initialized
-                with ndarrays full of the scalar. If a list of scalars, `grid[i]` is initialized to an
-                ndarray full of `initial[i]`. If a list of ndarrays of the same shape as the grids, `grid[i]`
-                is set to `initial[i]`. Default `1.0`.
-            num_grids: How many grids to create. Must be <= `shifts.shape[0]`.
-                Default is `shifts.shape[0]`
             periodic: Specifies how the sizes of edge cells are calculated; see main class
                 documentation. List of 3 bool, or a single bool that gets broadcast. Default `False`.
 
@@ -275,33 +300,6 @@ class Grid:
         if (self.shifts < 0).any():
             # TODO: Test negative shifts
             warnings.warn('Negative shifts are still experimental and mostly untested, be careful!', stacklevel=2)
-
-        num_shifts = self.shifts.shape[0]
-        if num_grids is None:
-            num_grids = num_shifts
-        elif num_grids > num_shifts:
-            raise GridError('Number of grids exceeds number of shifts (%u)' % num_shifts)
-
-        grids_shape = hstack((num_grids, self.shape))
-        if isinstance(initial, (float, int)):
-            if isinstance(initial, int):
-                warnings.warn('Initial value is an int, grids will be integer-typed!', stacklevel=2)
-            self.grids = numpy.full(grids_shape, initial)
-        else:
-            if len(initial) < num_grids:
-                raise GridError('Too few initial grids specified!')
-
-            self.grids = numpy.empty(grids_shape)
-            for i in range(num_grids):
-                if is_scalar(initial[i]):
-                    if initial[i] is not None:
-                        if isinstance(initial[i], int):
-                            warnings.warn('Initial value is an int, grid {} will be integer-typed!'.format(i), stacklevel=2)
-                        self.grids[i] = numpy.full(self.shape, initial[i])
-                else:
-                    if not numpy.array_equal(initial[i].shape, self.shape):
-                        raise GridError('Initial grid sizes must match given coordinates')
-                    self.grids[i] = initial[i]
 
     @staticmethod
     def load(filename: str) -> 'Grid':
