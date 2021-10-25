@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable, Dict, Optional, Union, Sequence, ClassVar
+from typing import List, Tuple, Callable, Dict, Optional, Union, Sequence, ClassVar, TypeVar
 
 import numpy    # type: ignore
 from numpy import diff, floor, ceil, zeros, hstack, newaxis
@@ -10,9 +10,8 @@ import copy
 from . import GridError
 
 
-__author__ = 'Jan Petykiewicz'
-
 eps_callable_type = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
+T = TypeVar('T', bound='Grid')
 
 
 class Grid:
@@ -227,7 +226,7 @@ class Grid:
         dxyz = self.shifted_dxyz(which_shifts)
         return [exyz[a][:-1] + dxyz[a] / 2.0 for a in range(3)]
 
-    def autoshifted_dxyz(self):
+    def autoshifted_dxyz(self) -> List[numpy.ndarray]:
         """
         Return cell widths, with each dimension shifted by the corresponding shifts.
 
@@ -325,7 +324,7 @@ class Grid:
         with open(filename, 'wb') as f:
             pickle.dump(self.__dict__, f, protocol=2)
 
-    def copy(self):
+    def copy(self: T) -> T:
         """
         Returns:
             Deep copy of the grid.

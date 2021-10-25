@@ -198,7 +198,7 @@ def draw_polygon(self,
         surface_normal: Axis normal to the plane we're drawing on. Integer in `range(3)`.
         center: 3-element ndarray or list specifying an offset applied to the polygon
         polygon: Nx2 or Nx3 ndarray specifying the vertices of a polygon (non-closed,
-            clockwise). If Nx3, the surface_normal coordinate is ignored. Must have at
+            clockwise). If Nx3, the `surface_normal` coordinate is ignored. Must have at
             least 3 vertices.
         thickness: Thickness of the layer to draw
         eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
