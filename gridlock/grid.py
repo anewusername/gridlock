@@ -250,9 +250,9 @@ class Grid:
             The allocated array
         """
         if fill_value is None:
-            return numpy.empty(self.cell_data_shape)
+            return numpy.empty(self.cell_data_shape, dtype=dtype)
         else:
-            return numpy.full(self.cell_data_shape, fill_value)
+            return numpy.full(self.cell_data_shape, fill_value, dtype=dtype)
 
     def __init__(self,
                  pixel_edge_coordinates: Sequence[numpy.ndarray],
