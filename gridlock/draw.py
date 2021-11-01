@@ -15,7 +15,7 @@ from . import GridError
 #       without having to pass `cell_data` again each time?
 
 
-eps_callable_t = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
+foreground_callable_t = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
 
 
 def draw_polygons(self,
@@ -24,7 +24,7 @@ def draw_polygons(self,
                   center: numpy.ndarray,
                   polygons: Sequence[numpy.ndarray],
                   thickness: float,
-                  eps: Union[Sequence[Union[float, eps_callable_t]], float, eps_callable_t],
+                  foreground: Union[Sequence[Union[float, foreground_callable_t]], float, foreground_callable_t],
                   ) -> None:
     """
     Draw polygons on an axis-aligned plane.
@@ -37,9 +37,9 @@ def draw_polygons(self,
             (non-closed, clockwise). If Nx3, the `surface_normal` coordinate is ignored. Each
             polygon must have at least 3 vertices.
         thickness: Thickness of the layer to draw
-        eps: Value to draw with ('epsilon'). Can be scalar, callable, or a list
+        foreground: Value to draw with ('brush color'). Can be scalar, callable, or a list
             of any of these (1 per grid). Callable values should take an ndarray the shape of the
-            grid and return an ndarray of equal shape containing the eps value at the given x, y,
+            grid and return an ndarray of equal shape containing the foreground value at the given x, y,
             and z (natural, not grid coordinates).
 
     Raises:
@@ -66,11 +66,11 @@ def draw_polygons(self,
             raise GridError(malformed + 'must be in plane with surface normal '
                             + 'xyz'[surface_normal])
 
-    # Broadcast eps where necessary
-    if numpy.size(eps) == 1:
-        eps = [eps] * len(cell_data)
-    elif isinstance(eps, numpy.ndarray):
-        raise GridError('ndarray not supported for eps')
+    # Broadcast foreground where necessary
+    if numpy.size(foreground) == 1:
+        foreground = [foreground] * len(cell_data)
+    elif isinstance(foreground, numpy.ndarray):
+        raise GridError('ndarray not supported for foreground')
 
     # ## Compute sub-domain of the grid occupied by polygons
     # 1) Compute outer bounds (bd) of polygons
@@ -103,21 +103,21 @@ def draw_polygons(self,
 
     # iterate over grids
     for i, grid in enumerate(cell_data):
-        # ## Evaluate or expand eps[i]
-        if callable(eps[i]):
+        # ## Evaluate or expand foreground[i]
+        if callable(foreground[i]):
             # meshgrid over the (shifted) domain
             domain = [self.shifted_xyz(i)[k][bdi_min[k]:bdi_max[k]+1] for k in range(3)]
             (x0, y0, z0) = numpy.meshgrid(*domain, indexing='ij')
 
             # evaluate on the meshgrid
-            eps_i = eps[i](x0, y0, z0)
-            if not numpy.isfinite(eps_i).all():
-                raise GridError(f'Non-finite values in eps[{i}]')
-        elif numpy.size(eps[i]) != 1:
-            raise GridError(f'Unsupported eps[{i}]: {type(eps[i])}')
+            foreground_i = foreground[i](x0, y0, z0)
+            if not numpy.isfinite(foreground_i).all():
+                raise GridError(f'Non-finite values in foreground[{i}]')
+        elif numpy.size(foreground[i]) != 1:
+            raise GridError(f'Unsupported foreground[{i}]: {type(foreground[i])}')
         else:
-            # eps[i] is scalar non-callable
-            eps_i = eps[i]
+            # foreground[i] is scalar non-callable
+            foreground_i = foreground[i]
 
         w_xy = numpy.zeros((bdi_max - bdi_min + 1)[surface].astype(int))
 
@@ -185,7 +185,7 @@ def draw_polygons(self,
 
         # ## Modify the grid
         g_slice = (i,) + tuple(numpy.s_[bdi_min[a]:bdi_max[a] + 1] for a in range(3))
-        cell_data[g_slice] = (1 - w) * cell_data[g_slice] + w * eps_i
+        cell_data[g_slice] = (1 - w) * cell_data[g_slice] + w * foreground_i
 
 
 def draw_polygon(self,
@@ -194,7 +194,7 @@ def draw_polygon(self,
                  center: numpy.ndarray,
                  polygon: numpy.ndarray,
                  thickness: float,
-                 eps: Union[Sequence[Union[float, eps_callable_t]], float, eps_callable_t],
+                 foreground: Union[Sequence[Union[float, foreground_callable_t]], float, foreground_callable_t],
                  ) -> None:
     """
     Draw a polygon on an axis-aligned plane.
@@ -207,9 +207,9 @@ def draw_polygon(self,
             clockwise). If Nx3, the `surface_normal` coordinate is ignored. Must have at
             least 3 vertices.
         thickness: Thickness of the layer to draw
-        eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
+        foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
     """
-    self.draw_polygons(cell_data, surface_normal, center, [polygon], thickness, eps)
+    self.draw_polygons(cell_data, surface_normal, center, [polygon], thickness, foreground)
 
 
 def draw_slab(self,
@@ -217,7 +217,7 @@ def draw_slab(self,
               surface_normal: int,
               center: numpy.ndarray,
               thickness: float,
-              eps: Union[List[Union[float, eps_callable_t]], float, eps_callable_t],
+              foreground: Union[List[Union[float, foreground_callable_t]], float, foreground_callable_t],
               ) -> None:
     """
     Draw an axis-aligned infinite slab.
@@ -227,7 +227,7 @@ def draw_slab(self,
         surface_normal: Axis normal to the plane we're drawing on. Integer in `range(3)`.
         center: `surface_normal` coordinate value at the center of the slab
         thickness: Thickness of the layer to draw
-        eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
+        foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
     """
     # Turn surface_normal into its integer representation
     if surface_normal not in range(3):
@@ -259,14 +259,14 @@ def draw_slab(self,
                      [xyz_max[0], xyz_min[1]],
                      [xyz_min[0], xyz_min[1]]], dtype=float)
 
-    self.draw_polygon(cell_data, surface_normal, center_shift, p, thickness, eps)
+    self.draw_polygon(cell_data, surface_normal, center_shift, p, thickness, foreground)
 
 
 def draw_cuboid(self,
                 cell_data: numpy.ndarray,
                 center: numpy.ndarray,
                 dimensions: numpy.ndarray,
-                eps: Union[List[Union[float, eps_callable_t]], float, eps_callable_t],
+                foreground: Union[List[Union[float, foreground_callable_t]], float, foreground_callable_t],
                 ) -> None:
     """
     Draw an axis-aligned cuboid
@@ -276,14 +276,14 @@ def draw_cuboid(self,
         center: 3-element ndarray or list specifying the cuboid's center
         dimensions: 3-element list or ndarray containing the x, y, and z edge-to-edge
              sizes of the cuboid
-        eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
+        foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
     """
     p = numpy.array([[-dimensions[0], +dimensions[1]],
                      [+dimensions[0], +dimensions[1]],
                      [+dimensions[0], -dimensions[1]],
                      [-dimensions[0], -dimensions[1]]], dtype=float) / 2.0
     thickness = dimensions[2]
-    self.draw_polygon(cell_data, 2, center, p, thickness, eps)
+    self.draw_polygon(cell_data, 2, center, p, thickness, foreground)
 
 
 def draw_cylinder(self,
@@ -293,7 +293,7 @@ def draw_cylinder(self,
                   radius: float,
                   thickness: float,
                   num_points: int,
-                  eps: Union[List[Union[float, eps_callable_t]], float, eps_callable_t],
+                  foreground: Union[List[Union[float, foreground_callable_t]], float, foreground_callable_t],
                   ) -> None:
     """
     Draw an axis-aligned cylinder. Approximated by a num_points-gon
@@ -305,13 +305,13 @@ def draw_cylinder(self,
         radius: cylinder radius
         thickness: Thickness of the layer to draw
         num_points: The circle is approximated by a polygon with `num_points` vertices
-        eps: Value to draw with ('epsilon'). See `draw_polygons()` for details.
+        foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
     """
     theta = numpy.linspace(0, 2*numpy.pi, num_points, endpoint=False)
     x = radius * numpy.sin(theta)
     y = radius * numpy.cos(theta)
     polygon = numpy.hstack((x[:, None], y[:, None]))
-    self.draw_polygon(cell_data, surface_normal, center, polygon, thickness, eps)
+    self.draw_polygon(cell_data, surface_normal, center, polygon, thickness, foreground)
 
 
 def draw_extrude_rectangle(self,
@@ -351,7 +351,7 @@ def draw_extrude_rectangle(self,
                       numpy.array([-1, 1, 1, -1], dtype=float) * dim[1]/2.0)).T
     thickness = distance
 
-    eps_func = []
+    foreground_func = []
     for i, grid in enumerate(cell_data):
         z = self.pos2ind(rectangle[0, :], i, round_ind=False, check_bounds=False)[direction]
 
@@ -360,19 +360,19 @@ def draw_extrude_rectangle(self,
         fpart = z - numpy.floor(z)
         mult = [1-fpart, fpart][::s]  # reverses if s negative
 
-        eps = mult[0] * grid[tuple(ind)]
+        foreground = mult[0] * grid[tuple(ind)]
         ind[direction] += 1
-        eps += mult[1] * grid[tuple(ind)]
+        foreground += mult[1] * grid[tuple(ind)]
 
-        def f_eps(xs, ys, zs, i=i, eps=eps) -> numpy.ndarray:
+        def f_foreground(xs, ys, zs, i=i, foreground=foreground) -> numpy.ndarray:
             # transform from natural position to index
             xyzi = numpy.array([self.pos2ind(qrs, which_shifts=i)
                                 for qrs in zip(xs.flat, ys.flat, zs.flat)], dtype=int)
             # reshape to original shape and keep only in-plane components
             qi, ri = (numpy.reshape(xyzi[:, k], xs.shape) for k in surface)
-            return eps[qi, ri]
+            return foreground[qi, ri]
 
-        eps_func.append(f_eps)
+        foreground_func.append(f_foreground)
 
-    self.draw_polygon(cell_data, direction, center, p, thickness, eps_func)
+    self.draw_polygon(cell_data, direction, center, p, thickness, foreground_func)
 

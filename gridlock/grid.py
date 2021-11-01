@@ -10,7 +10,7 @@ import copy
 from . import GridError
 
 
-eps_callable_type = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
+foreground_callable_type = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
 T = TypeVar('T', bound='Grid')
 
 
