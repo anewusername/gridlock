@@ -19,6 +19,5 @@ from .error import GridError
 from .grid import Grid
 
 __author__ = 'Jan Petykiewicz'
-
-from .VERSION import __version__
+__version__ = '1.0'
 version = __version__
