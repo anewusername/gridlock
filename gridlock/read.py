@@ -3,7 +3,8 @@ Readback and visualization methods for Grid class
 """
 from typing import Dict, Optional, Union, Any
 
-import numpy        # type: ignore
+import numpy
+from numpy.typing import NDArray, ArrayLike
 
 from . import GridError
 
@@ -12,13 +13,14 @@ from . import GridError
 # .visualize_isosurface uses mpl_toolkits.mplot3d
 
 
-def get_slice(self,
-              cell_data: numpy.ndarray,
-              surface_normal: int,
-              center: float,
-              which_shifts: int = 0,
-              sample_period: int = 1
-              ) -> numpy.ndarray:
+def get_slice(
+        self,
+        cell_data: NDArray,
+        surface_normal: int,
+        center: float,
+        which_shifts: int = 0,
+        sample_period: int = 1
+        ) -> NDArray:
     """
     Retrieve a slice of a grid.
     Interpolates if given a position between two planes.
@@ -75,15 +77,16 @@ def get_slice(self,
     return sliced_grid
 
 
-def visualize_slice(self,
-                    cell_data: numpy.ndarray,
-                    surface_normal: int,
-                    center: float,
-                    which_shifts: int = 0,
-                    sample_period: int = 1,
-                    finalize: bool = True,
-                    pcolormesh_args: Optional[Dict[str, Any]] = None,
-                    ) -> None:
+def visualize_slice(
+        self,
+        cell_data: NDArray,
+        surface_normal: int,
+        center: float,
+        which_shifts: int = 0,
+        sample_period: int = 1,
+        finalize: bool = True,
+        pcolormesh_args: Optional[Dict[str, Any]] = None,
+        ) -> None:
     """
     Visualize a slice of a grid.
     Interpolates if given a position between two planes.
@@ -122,14 +125,15 @@ def visualize_slice(self,
         pyplot.show()
 
 
-def visualize_isosurface(self,
-                         cell_data: numpy.ndarray,
-                         level: Optional[float] = None,
-                         which_shifts: int = 0,
-                         sample_period: int = 1,
-                         show_edges: bool = True,
-                         finalize: bool = True,
-                         ) -> None:
+def visualize_isosurface(
+        self,
+        cell_data: NDArray,
+        level: Optional[float] = None,
+        which_shifts: int = 0,
+        sample_period: int = 1,
+        show_edges: bool = True,
+        finalize: bool = True,
+        ) -> None:
     """
     Draw an isosurface plot of the device.
 

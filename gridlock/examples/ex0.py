@@ -1,4 +1,4 @@
-import numpy        # type: ignore
+import numpy
 from gridlock import Grid
 
 

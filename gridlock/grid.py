@@ -1,6 +1,7 @@
 from typing import List, Tuple, Callable, Dict, Optional, Union, Sequence, ClassVar, TypeVar
 
-import numpy    # type: ignore
+import numpy
+from numpy.typing import NDArray, ArrayLike
 from numpy import diff, floor, ceil, zeros, hstack, newaxis
 
 import pickle
@@ -10,7 +11,7 @@ import copy
 from . import GridError
 
 
-foreground_callable_type = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
+foreground_callable_type = Callable[[NDArray, NDArray, NDArray], NDArray]
 T = TypeVar('T', bound='Grid')
 
 
@@ -48,23 +49,27 @@ class Grid:
      Because of this, we either assume this 'ghost' cell is the same size as the last
       real cell, or, if `self.periodic[a]` is set to `True`, the same size as the first cell.
     """
-    exyz: List[numpy.ndarray]
+    exyz: List[NDArray]
     """Cell edges. Monotonically increasing without duplicates."""
 
     periodic: List[bool]
     """For each axis, determines how far the rightmost boundary gets shifted. """
 
-    shifts: numpy.ndarray
+    shifts: NDArray
     """Offsets `[[x0, y0, z0], [x1, y1, z1], ...]` for grid `0,1,...`"""
 
-    Yee_Shifts_E: ClassVar[numpy.ndarray] = 0.5 * numpy.array([[1, 0, 0],
-                                                               [0, 1, 0],
-                                                               [0, 0, 1]], dtype=float)
+    Yee_Shifts_E: ClassVar[NDArray] = 0.5 * numpy.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+        ], dtype=float)
     """Default shifts for Yee grid E-field"""
 
-    Yee_Shifts_H: ClassVar[numpy.ndarray] = 0.5 * numpy.array([[0, 1, 1],
-                                                               [1, 0, 1],
-                                                               [1, 1, 0]], dtype=float)
+    Yee_Shifts_H: ClassVar[NDArray] = 0.5 * numpy.array([
+        [0, 1, 1],
+        [1, 0, 1],
+        [1, 1, 0],
+        ], dtype=float)
     """Default shifts for Yee grid H-field"""
 
     from .draw import (
@@ -75,7 +80,7 @@ class Grid:
     from .position import ind2pos, pos2ind
 
     @property
-    def dxyz(self) -> List[numpy.ndarray]:
+    def dxyz(self) -> List[NDArray]:
         """
         Cell sizes for each axis, no shifts applied
 
@@ -85,7 +90,7 @@ class Grid:
         return [numpy.diff(ee) for ee in self.exyz]
 
     @property
-    def xyz(self) -> List[numpy.ndarray]:
+    def xyz(self) -> List[NDArray]:
         """
         Cell centers for each axis, no shifts applied
 
@@ -95,7 +100,7 @@ class Grid:
         return [self.exyz[a][:-1] + self.dxyz[a] / 2.0 for a in range(3)]
 
     @property
-    def shape(self) -> numpy.ndarray:
+    def shape(self) -> NDArray[numpy.int_]:
         """
         The number of cells in x, y, and z
 
@@ -119,7 +124,7 @@ class Grid:
         return numpy.hstack((self.num_grids, self.shape))
 
     @property
-    def dxyz_with_ghost(self) -> List[numpy.ndarray]:
+    def dxyz_with_ghost(self) -> List[NDArray]:
         """
         Gives dxyz with an additional 'ghost' cell at the end, whose value depends
          on whether or not the axis has periodic boundary conditions. See main description
@@ -135,7 +140,7 @@ class Grid:
         return [numpy.hstack((self.dxyz[a], self.dxyz[a][e])) for a, e in zip(range(3), el)]
 
     @property
-    def center(self) -> numpy.ndarray:
+    def center(self) -> NDArray[numpy.float64]:
         """
         Center position of the entire grid, no shifts applied
 
@@ -148,7 +153,7 @@ class Grid:
         return numpy.array(centers, dtype=float)
 
     @property
-    def dxyz_limits(self) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    def dxyz_limits(self) -> Tuple[NDArray, NDArray]:
         """
         Returns the minimum and maximum cell size for each axis, as a tuple of two 3-element
          ndarrays. No shifts are applied, so these are extreme bounds on these values (as a
@@ -161,7 +166,7 @@ class Grid:
         d_max = numpy.array([max(self.dxyz[a]) for a in range(3)], dtype=float)
         return d_min, d_max
 
-    def shifted_exyz(self, which_shifts: Optional[int]) -> List[numpy.ndarray]:
+    def shifted_exyz(self, which_shifts: Optional[int]) -> List[NDArray]:
         """
         Returns edges for which_shifts.
 
@@ -183,7 +188,7 @@ class Grid:
 
         return [self.exyz[a] + dxyz[a] * shifts[a] for a in range(3)]
 
-    def shifted_dxyz(self, which_shifts: Optional[int]) -> List[numpy.ndarray]:
+    def shifted_dxyz(self, which_shifts: Optional[int]) -> List[NDArray]:
         """
         Returns cell sizes for `which_shifts`.
 
@@ -210,7 +215,7 @@ class Grid:
 
         return sdxyz
 
-    def shifted_xyz(self, which_shifts: Optional[int]) -> List[numpy.ndarray]:
+    def shifted_xyz(self, which_shifts: Optional[int]) -> List[NDArray[numpy.float64]]:
         """
         Returns cell centers for `which_shifts`.
 
@@ -226,7 +231,7 @@ class Grid:
         dxyz = self.shifted_dxyz(which_shifts)
         return [exyz[a][:-1] + dxyz[a] / 2.0 for a in range(3)]
 
-    def autoshifted_dxyz(self) -> List[numpy.ndarray]:
+    def autoshifted_dxyz(self) -> List[NDArray[numpy.float64]]:
         """
         Return cell widths, with each dimension shifted by the corresponding shifts.
 
@@ -237,7 +242,7 @@ class Grid:
             raise GridError('Autoshifting requires exactly 3 grids')
         return [self.shifted_dxyz(which_shifts=a)[a] for a in range(3)]
 
-    def allocate(self, fill_value: Optional[float] = 1.0, dtype=numpy.float32) -> numpy.ndarray:
+    def allocate(self, fill_value: Optional[float] = 1.0, dtype=numpy.float32) -> NDArray:
         """
         Allocate an ndarray for storing grid data.
 
@@ -254,11 +259,12 @@ class Grid:
         else:
             return numpy.full(self.cell_data_shape, fill_value, dtype=dtype)
 
-    def __init__(self,
-                 pixel_edge_coordinates: Sequence[numpy.ndarray],
-                 shifts: numpy.ndarray = Yee_Shifts_E,
-                 periodic: Union[bool, Sequence[bool]] = False,
-                 ) -> None:
+    def __init__(
+            self,
+            pixel_edge_coordinates: Sequence[ArrayLike],
+            shifts: ArrayLike = Yee_Shifts_E,
+            periodic: Union[bool, Sequence[bool]] = False,
+            ) -> None:
         """
         Args:
             pixel_edge_coordinates: 3-element list of (ndarrays or lists) specifying the

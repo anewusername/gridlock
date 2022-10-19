@@ -3,7 +3,8 @@ Drawing-related methods for Grid class
 """
 from typing import List, Optional, Union, Sequence, Callable
 
-import numpy        # type: ignore
+import numpy
+from numpy.typing import NDArray, ArrayLike
 from float_raster import raster
 
 from . import GridError
@@ -15,17 +16,19 @@ from . import GridError
 #       without having to pass `cell_data` again each time?
 
 
-foreground_callable_t = Callable[[numpy.ndarray, numpy.ndarray, numpy.ndarray], numpy.ndarray]
+foreground_callable_t = Callable[[NDArray, NDArray, NDArray], NDArray]
+foreground_t = Union[float, foreground_callable_t]
 
 
-def draw_polygons(self,
-                  cell_data: numpy.ndarray,
-                  surface_normal: int,
-                  center: numpy.ndarray,
-                  polygons: Sequence[numpy.ndarray],
-                  thickness: float,
-                  foreground: Union[Sequence[Union[float, foreground_callable_t]], float, foreground_callable_t],
-                  ) -> None:
+def draw_polygons(
+        self,
+        cell_data: NDArray,
+        surface_normal: int,
+        center: ArrayLike,
+        polygons: Sequence[NDArray],
+        thickness: float,
+        foreground: Union[Sequence[foreground_t], foreground_t],
+        ) -> None:
     """
     Draw polygons on an axis-aligned plane.
 
@@ -74,8 +77,8 @@ def draw_polygons(self,
 
     # ## Compute sub-domain of the grid occupied by polygons
     # 1) Compute outer bounds (bd) of polygons
-    bd_2d_min = [0, 0]
-    bd_2d_max = [0, 0]
+    bd_2d_min = numpy.array([0, 0])
+    bd_2d_max = numpy.array([0, 0])
     for polygon in polygons:
         bd_2d_min = numpy.minimum(bd_2d_min, polygon.min(axis=0))
         bd_2d_max = numpy.maximum(bd_2d_max, polygon.max(axis=0))
@@ -97,7 +100,7 @@ def draw_polygons(self,
     polygons = [poly + center[surface] for poly in polygons]
 
     # ## Generate weighing function
-    def to_3d(vector: numpy.ndarray, val: float = 0.0) -> numpy.ndarray:
+    def to_3d(vector: NDArray, val: float = 0.0) -> NDArray[numpy.float64]:
         v_2d = numpy.array(vector, dtype=float)
         return numpy.insert(v_2d, surface_normal, (val,))
 
@@ -188,14 +191,15 @@ def draw_polygons(self,
         cell_data[g_slice] = (1 - w) * cell_data[g_slice] + w * foreground_i
 
 
-def draw_polygon(self,
-                 cell_data: numpy.ndarray,
-                 surface_normal: int,
-                 center: numpy.ndarray,
-                 polygon: numpy.ndarray,
-                 thickness: float,
-                 foreground: Union[Sequence[Union[float, foreground_callable_t]], float, foreground_callable_t],
-                 ) -> None:
+def draw_polygon(
+        self,
+        cell_data: NDArray,
+        surface_normal: int,
+        center: ArrayLike,
+        polygon: ArrayLike,
+        thickness: float,
+        foreground: Union[Sequence[foreground_t], foreground_t],
+        ) -> None:
     """
     Draw a polygon on an axis-aligned plane.
 
@@ -212,13 +216,14 @@ def draw_polygon(self,
     self.draw_polygons(cell_data, surface_normal, center, [polygon], thickness, foreground)
 
 
-def draw_slab(self,
-              cell_data: numpy.ndarray,
-              surface_normal: int,
-              center: numpy.ndarray,
-              thickness: float,
-              foreground: Union[List[Union[float, foreground_callable_t]], float, foreground_callable_t],
-              ) -> None:
+def draw_slab(
+        self,
+        cell_data: NDArray,
+        surface_normal: int,
+        center: ArrayLike,
+        thickness: float,
+        foreground: Union[Sequence[foreground_t], foreground_t],
+        ) -> None:
     """
     Draw an axis-aligned infinite slab.
 
@@ -262,12 +267,13 @@ def draw_slab(self,
     self.draw_polygon(cell_data, surface_normal, center_shift, p, thickness, foreground)
 
 
-def draw_cuboid(self,
-                cell_data: numpy.ndarray,
-                center: numpy.ndarray,
-                dimensions: numpy.ndarray,
-                foreground: Union[List[Union[float, foreground_callable_t]], float, foreground_callable_t],
-                ) -> None:
+def draw_cuboid(
+        self,
+        cell_data: NDArray,
+        center: ArrayLike,
+        dimensions: ArrayLike,
+        foreground: Union[Sequence[foreground_t], foreground_t],
+        ) -> None:
     """
     Draw an axis-aligned cuboid
 
@@ -278,6 +284,7 @@ def draw_cuboid(self,
              sizes of the cuboid
         foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
     """
+    dimensions = numpy.array(dimensions, copy=False)
     p = numpy.array([[-dimensions[0], +dimensions[1]],
                      [+dimensions[0], +dimensions[1]],
                      [+dimensions[0], -dimensions[1]],
@@ -286,15 +293,16 @@ def draw_cuboid(self,
     self.draw_polygon(cell_data, 2, center, p, thickness, foreground)
 
 
-def draw_cylinder(self,
-                  cell_data: numpy.ndarray,
-                  surface_normal: int,
-                  center: numpy.ndarray,
-                  radius: float,
-                  thickness: float,
-                  num_points: int,
-                  foreground: Union[List[Union[float, foreground_callable_t]], float, foreground_callable_t],
-                  ) -> None:
+def draw_cylinder(
+        self,
+        cell_data: NDArray,
+        surface_normal: int,
+        center: ArrayLike,
+        radius: float,
+        thickness: float,
+        num_points: int,
+        foreground: Union[Sequence[foreground_t], foreground_t],
+        ) -> None:
     """
     Draw an axis-aligned cylinder. Approximated by a num_points-gon
 
@@ -314,13 +322,14 @@ def draw_cylinder(self,
     self.draw_polygon(cell_data, surface_normal, center, polygon, thickness, foreground)
 
 
-def draw_extrude_rectangle(self,
-                           cell_data: numpy.ndarray,
-                           rectangle: numpy.ndarray,
-                           direction: int,
-                           polarity: int,
-                           distance: float,
-                           ) -> None:
+def draw_extrude_rectangle(
+        self,
+        cell_data: NDArray,
+        rectangle: ArrayLike,
+        direction: int,
+        polarity: int,
+        distance: float,
+        ) -> None:
     """
     Extrude a rectangle of a previously-drawn structure along an axis.
 
@@ -361,10 +370,10 @@ def draw_extrude_rectangle(self,
         mult = [1-fpart, fpart][::s]  # reverses if s negative
 
         foreground = mult[0] * grid[tuple(ind)]
-        ind[direction] += 1
+        ind[direction] += 1                         # type: ignore #(known safe)
         foreground += mult[1] * grid[tuple(ind)]
 
-        def f_foreground(xs, ys, zs, i=i, foreground=foreground) -> numpy.ndarray:
+        def f_foreground(xs, ys, zs, i=i, foreground=foreground) -> NDArray[numpy.int_]:
             # transform from natural position to index
             xyzi = numpy.array([self.pos2ind(qrs, which_shifts=i)
                                 for qrs in zip(xs.flat, ys.flat, zs.flat)], dtype=int)

@@ -1,19 +1,21 @@
 """
 Position-related methods for Grid class
 """
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
-import numpy        # type: ignore
+import numpy
+from numpy.typing import NDArray, ArrayLike
 
 from . import GridError
 
 
-def ind2pos(self,
-            ind: numpy.ndarray,
-            which_shifts: Optional[int] = None,
-            round_ind: bool = True,
-            check_bounds: bool = True
-            ) -> numpy.ndarray:
+def ind2pos(
+        self,
+        ind: NDArray,
+        which_shifts: Optional[int] = None,
+        round_ind: bool = True,
+        check_bounds: bool = True
+        ) -> NDArray[numpy.float64]:
     """
     Returns the natural position corresponding to the specified cell center indices.
      The resulting position is clipped to the bounds of the grid
@@ -59,12 +61,13 @@ def ind2pos(self,
     return numpy.array(position, dtype=float)
 
 
-def pos2ind(self,
-            r: numpy.ndarray,
-            which_shifts: Optional[int],
-            round_ind: bool = True,
-            check_bounds: bool = True
-            ) -> numpy.ndarray:
+def pos2ind(
+        self,
+        r: ArrayLike,
+        which_shifts: Optional[int],
+        round_ind: bool = True,
+        check_bounds: bool = True
+        ) -> NDArray[numpy.float64]:
     """
     Returns the cell-center indices corresponding to the specified natural position.
          The resulting position is clipped to within the outer centers of the grid.
