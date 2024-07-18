@@ -1,12 +1,17 @@
 """
 Readback and visualization methods for Grid class
 """
-from typing import Dict, Optional, Union, Any
+from typing import Any, TYPE_CHECKING
 
 import numpy
 from numpy.typing import NDArray, ArrayLike
 
 from . import GridError
+
+if TYPE_CHECKING:
+    import matplotlib.axes
+    import matplotlib.figure
+
 
 # .visualize_* uses matplotlib
 # .visualize_isosurface uses skimage
@@ -128,7 +133,7 @@ def visualize_slice(
 def visualize_isosurface(
         self,
         cell_data: NDArray,
-        level: Optional[float] = None,
+        level: float | None = None,
         which_shifts: int = 0,
         sample_period: int = 1,
         show_edges: bool = True,

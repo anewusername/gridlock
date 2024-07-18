@@ -1,7 +1,7 @@
 """
 Drawing-related methods for Grid class
 """
-from typing import List, Optional, Union, Sequence, Callable
+from typing import Union, Sequence, Callable
 
 import numpy
 from numpy.typing import NDArray, ArrayLike
@@ -27,7 +27,7 @@ def draw_polygons(
         center: ArrayLike,
         polygons: Sequence[NDArray],
         thickness: float,
-        foreground: Union[Sequence[foreground_t], foreground_t],
+        foreground: Sequence[foreground_t] | foreground_t,
         ) -> None:
     """
     Draw polygons on an axis-aligned plane.
@@ -70,7 +70,7 @@ def draw_polygons(
                             + 'xyz'[surface_normal])
 
     # Broadcast foreground where necessary
-    foregrounds: Union[Sequence[foreground_callable_t], Sequence[float]]
+    foregrounds: Sequence[foreground_callable_t] | Sequence[float]
     if numpy.size(foreground) == 1:     # type: ignore
         foregrounds = [foreground] * len(cell_data) # type: ignore
     elif isinstance(foreground, numpy.ndarray):
@@ -202,7 +202,7 @@ def draw_polygon(
         center: ArrayLike,
         polygon: ArrayLike,
         thickness: float,
-        foreground: Union[Sequence[foreground_t], foreground_t],
+        foreground: Sequence[foreground_t] | foreground_t,
         ) -> None:
     """
     Draw a polygon on an axis-aligned plane.
@@ -226,7 +226,7 @@ def draw_slab(
         surface_normal: int,
         center: ArrayLike,
         thickness: float,
-        foreground: Union[Sequence[foreground_t], foreground_t],
+        foreground: Sequence[foreground_t] | foreground_t,
         ) -> None:
     """
     Draw an axis-aligned infinite slab.
@@ -276,7 +276,7 @@ def draw_cuboid(
         cell_data: NDArray,
         center: ArrayLike,
         dimensions: ArrayLike,
-        foreground: Union[Sequence[foreground_t], foreground_t],
+        foreground: Sequence[foreground_t] | foreground_t,
         ) -> None:
     """
     Draw an axis-aligned cuboid
@@ -305,7 +305,7 @@ def draw_cylinder(
         radius: float,
         thickness: float,
         num_points: int,
-        foreground: Union[Sequence[foreground_t], foreground_t],
+        foreground: Sequence[foreground_t] | foreground_t,
         ) -> None:
     """
     Draw an axis-aligned cylinder. Approximated by a num_points-gon

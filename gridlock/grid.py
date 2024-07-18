@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable, Dict, Optional, Union, Sequence, ClassVar, TypeVar
+from typing import Callable, Sequence, ClassVar, Self
 
 import numpy
 from numpy.typing import NDArray, ArrayLike
@@ -12,7 +12,6 @@ from . import GridError
 
 
 foreground_callable_type = Callable[[NDArray, NDArray, NDArray], NDArray]
-T = TypeVar('T', bound='Grid')
 
 
 class Grid:
@@ -49,10 +48,10 @@ class Grid:
      Because of this, we either assume this 'ghost' cell is the same size as the last
       real cell, or, if `self.periodic[a]` is set to `True`, the same size as the first cell.
     """
-    exyz: List[NDArray]
+    exyz: list[NDArray]
     """Cell edges. Monotonically increasing without duplicates."""
 
-    periodic: List[bool]
+    periodic: list[bool]
     """For each axis, determines how far the rightmost boundary gets shifted. """
 
     shifts: NDArray
@@ -80,7 +79,7 @@ class Grid:
     from .position import ind2pos, pos2ind
 
     @property
-    def dxyz(self) -> List[NDArray]:
+    def dxyz(self) -> list[NDArray]:
         """
         Cell sizes for each axis, no shifts applied
 
@@ -90,7 +89,7 @@ class Grid:
         return [numpy.diff(ee) for ee in self.exyz]
 
     @property
-    def xyz(self) -> List[NDArray]:
+    def xyz(self) -> list[NDArray]:
         """
         Cell centers for each axis, no shifts applied
 
@@ -124,7 +123,7 @@ class Grid:
         return numpy.hstack((self.num_grids, self.shape))
 
     @property
-    def dxyz_with_ghost(self) -> List[NDArray]:
+    def dxyz_with_ghost(self) -> list[NDArray]:
         """
         Gives dxyz with an additional 'ghost' cell at the end, whose value depends
          on whether or not the axis has periodic boundary conditions. See main description
@@ -153,7 +152,7 @@ class Grid:
         return numpy.array(centers, dtype=float)
 
     @property
-    def dxyz_limits(self) -> Tuple[NDArray, NDArray]:
+    def dxyz_limits(self) -> tuple[NDArray, NDArray]:
         """
         Returns the minimum and maximum cell size for each axis, as a tuple of two 3-element
          ndarrays. No shifts are applied, so these are extreme bounds on these values (as a
@@ -166,7 +165,7 @@ class Grid:
         d_max = numpy.array([max(self.dxyz[a]) for a in range(3)], dtype=float)
         return d_min, d_max
 
-    def shifted_exyz(self, which_shifts: Optional[int]) -> List[NDArray]:
+    def shifted_exyz(self, which_shifts: int | None) -> list[NDArray]:
         """
         Returns edges for which_shifts.
 
@@ -188,7 +187,7 @@ class Grid:
 
         return [self.exyz[a] + dxyz[a] * shifts[a] for a in range(3)]
 
-    def shifted_dxyz(self, which_shifts: Optional[int]) -> List[NDArray]:
+    def shifted_dxyz(self, which_shifts: int | None) -> list[NDArray]:
         """
         Returns cell sizes for `which_shifts`.
 
@@ -215,7 +214,7 @@ class Grid:
 
         return sdxyz
 
-    def shifted_xyz(self, which_shifts: Optional[int]) -> List[NDArray[numpy.float64]]:
+    def shifted_xyz(self, which_shifts: int | None) -> list[NDArray[numpy.float64]]:
         """
         Returns cell centers for `which_shifts`.
 
@@ -231,7 +230,7 @@ class Grid:
         dxyz = self.shifted_dxyz(which_shifts)
         return [exyz[a][:-1] + dxyz[a] / 2.0 for a in range(3)]
 
-    def autoshifted_dxyz(self) -> List[NDArray[numpy.float64]]:
+    def autoshifted_dxyz(self) -> list[NDArray[numpy.float64]]:
         """
         Return cell widths, with each dimension shifted by the corresponding shifts.
 
@@ -242,7 +241,7 @@ class Grid:
             raise GridError('Autoshifting requires exactly 3 grids')
         return [self.shifted_dxyz(which_shifts=a)[a] for a in range(3)]
 
-    def allocate(self, fill_value: Optional[float] = 1.0, dtype=numpy.float32) -> NDArray:
+    def allocate(self, fill_value: float | None = 1.0, dtype=numpy.float32) -> NDArray:
         """
         Allocate an ndarray for storing grid data.
 
@@ -263,7 +262,7 @@ class Grid:
             self,
             pixel_edge_coordinates: Sequence[ArrayLike],
             shifts: ArrayLike = Yee_Shifts_E,
-            periodic: Union[bool, Sequence[bool]] = False,
+            periodic: bool | Sequence[bool] = False,
             ) -> None:
         """
         Args:
@@ -320,7 +319,7 @@ class Grid:
         g.__dict__.update(tmp_dict)
         return g
 
-    def save(self: T, filename: str) -> T:
+    def save(self, filename: str) -> Self:
         """
         Save to file.
 
@@ -334,7 +333,7 @@ class Grid:
             pickle.dump(self.__dict__, f, protocol=2)
         return self
 
-    def copy(self: T) -> T:
+    def copy(self) -> Self:
         """
         Returns:
             Deep copy of the grid.

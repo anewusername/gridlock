@@ -1,8 +1,6 @@
 """
 Position-related methods for Grid class
 """
-from typing import List, Optional, Sequence
-
 import numpy
 from numpy.typing import NDArray, ArrayLike
 
@@ -12,7 +10,7 @@ from . import GridError
 def ind2pos(
         self,
         ind: NDArray,
-        which_shifts: Optional[int] = None,
+        which_shifts: int | None = None,
         round_ind: bool = True,
         check_bounds: bool = True
         ) -> NDArray[numpy.float64]:
@@ -64,7 +62,7 @@ def ind2pos(
 def pos2ind(
         self,
         r: ArrayLike,
-        which_shifts: Optional[int],
+        which_shifts: int | None,
         round_ind: bool = True,
         check_bounds: bool = True
         ) -> NDArray[numpy.float64]:
