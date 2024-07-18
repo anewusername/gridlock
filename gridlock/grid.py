@@ -2,7 +2,6 @@ from typing import Callable, Sequence, ClassVar, Self
 
 import numpy
 from numpy.typing import NDArray, ArrayLike
-from numpy import diff, floor, ceil, zeros, hstack, newaxis
 
 import pickle
 import warnings

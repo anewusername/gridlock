@@ -4,7 +4,7 @@ Readback and visualization methods for Grid class
 from typing import Any, TYPE_CHECKING
 
 import numpy
-from numpy.typing import NDArray, ArrayLike
+from numpy.typing import NDArray
 
 from . import GridError
 

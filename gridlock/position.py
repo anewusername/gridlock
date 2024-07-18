@@ -99,7 +99,7 @@ def pos2ind(
 
     grid_pos = numpy.zeros((3,))
     for a in range(3):
-        xi = numpy.digitize(r[a], sexyz[a]) - 1 # Figure out which cell we're in
+        xi = numpy.digitize(r[a], sexyz[a]) - 1  # Figure out which cell we're in
         xi_clipped = numpy.clip(xi, 0, sexyz[a].size - 2)  # Clip back into grid bounds
 
         # No need to interpolate if round_ind is true or we were outside the grid

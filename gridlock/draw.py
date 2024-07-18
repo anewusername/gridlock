@@ -59,7 +59,7 @@ def draw_polygons(
     for i, polygon in enumerate(polygons):
         malformed = f'Malformed polygon: ({i})'
         if polygon.shape[1] not in (2, 3):
-                raise GridError(malformed + 'must be a Nx2 or Nx3 ndarray')
+            raise GridError(malformed + 'must be a Nx2 or Nx3 ndarray')
         if polygon.shape[1] == 3:
             polygon = polygon[surface, :]
 
@@ -72,7 +72,7 @@ def draw_polygons(
     # Broadcast foreground where necessary
     foregrounds: Sequence[foreground_callable_t] | Sequence[float]
     if numpy.size(foreground) == 1:     # type: ignore
-        foregrounds = [foreground] * len(cell_data) # type: ignore
+        foregrounds = [foreground] * len(cell_data)  # type: ignore
     elif isinstance(foreground, numpy.ndarray):
         raise GridError('ndarray not supported for foreground')
     else:
@@ -113,7 +113,7 @@ def draw_polygons(
         foregrounds_i = foregrounds[i]
         if callable(foregrounds_i):
             # meshgrid over the (shifted) domain
-            domain = [self.shifted_xyz(i)[k][bdi_min[k]:bdi_max[k]+1] for k in range(3)]
+            domain = [self.shifted_xyz(i)[k][bdi_min[k]:bdi_max[k] + 1] for k in range(3)]
             (x0, y0, z0) = numpy.meshgrid(*domain, indexing='ij')
 
             # evaluate on the meshgrid
@@ -319,7 +319,7 @@ def draw_cylinder(
         num_points: The circle is approximated by a polygon with `num_points` vertices
         foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
     """
-    theta = numpy.linspace(0, 2*numpy.pi, num_points, endpoint=False)
+    theta = numpy.linspace(0, 2 * numpy.pi, num_points, endpoint=False)
     x = radius * numpy.sin(theta)
     y = radius * numpy.cos(theta)
     polygon = numpy.hstack((x[:, None], y[:, None]))
@@ -360,8 +360,8 @@ def draw_extrude_rectangle(
     surface = numpy.delete(range(3), direction)
 
     dim = numpy.fabs(numpy.diff(rectangle, axis=0).T)[surface]
-    p = numpy.vstack((numpy.array([-1, -1, 1, 1], dtype=float) * dim[0]/2.0,
-                      numpy.array([-1, 1, 1, -1], dtype=float) * dim[1]/2.0)).T
+    p = numpy.vstack((numpy.array([-1, -1, 1, 1], dtype=float) * dim[0] * 0.5,
+                      numpy.array([-1, 1, 1, -1], dtype=float) * dim[1] * 0.5)).T
     thickness = distance
 
     foreground_func = []
@@ -371,7 +371,7 @@ def draw_extrude_rectangle(
         ind = [int(numpy.floor(z)) if i == direction else slice(None) for i in range(3)]
 
         fpart = z - numpy.floor(z)
-        mult = [1-fpart, fpart][::s]  # reverses if s negative
+        mult = [1 - fpart, fpart][::s]  # reverses if s negative
 
         foreground = mult[0] * grid[tuple(ind)]
         ind[direction] += 1                         # type: ignore #(known safe)
