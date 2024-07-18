@@ -14,7 +14,7 @@ the coordinates of the boundary points along each axis).
 ## Installation
 
 Requirements:
-* python 3 (written and tested with 3.9)
+* python >3.11 (written and tested with 3.12)
 * numpy
 * [float_raster](https://mpxd.net/code/jan/float_raster)
 * matplotlib (optional, used for visualization functions)
