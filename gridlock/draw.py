@@ -8,7 +8,6 @@ from numpy.typing import NDArray, ArrayLike
 from float_raster import raster
 
 from . import GridError
-from .base import GridBase
 from .position import GridPosMixin
 
 

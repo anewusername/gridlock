@@ -7,7 +7,6 @@ import numpy
 from numpy.typing import NDArray
 
 from . import GridError
-from .base import GridBase
 from .position import GridPosMixin
 
 if TYPE_CHECKING:

@@ -9,7 +9,6 @@ import warnings
 import copy
 
 from . import GridError
-from .base import GridBase
 from .draw import GridDrawMixin
 from .read import GridReadMixin
 from .position import GridPosMixin
