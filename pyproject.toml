@@ -38,8 +38,8 @@ include = [
     ]
 dynamic = ["version"]
 dependencies = [
-    "numpy~=1.26",
-    "float_raster",
+    "numpy>=1.26",
+    "float_raster>=0.8",
     ]
 
 
