@@ -72,7 +72,7 @@ def get_slice(
 
     # Extract grid values from planes above and below visualized slice
     sliced_grid = numpy.zeros(self.shape[surface])
-    for ci, weight in zip(centers, w):
+    for ci, weight in zip(centers, w, strict=True):
         s = tuple(ci if a == surface_normal else numpy.s_[::sp] for a in range(3))
         sliced_grid += weight * cell_data[which_shifts][tuple(s)]
 
@@ -193,7 +193,7 @@ def visualize_isosurface(
     ybs = 0.5 * max_range * mg[1].flatten() + 0.5 * (ys.max() + ys.min())
     zbs = 0.5 * max_range * mg[2].flatten() + 0.5 * (zs.max() + zs.min())
     # Comment or uncomment following both lines to test the fake bounding box:
-    for xb, yb, zb in zip(xbs, ybs, zbs):
+    for xb, yb, zb in zip(xbs, ybs, zbs, strict=True):
         ax.plot([xb], [yb], [zb], 'w')
 
     if finalize:

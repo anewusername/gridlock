@@ -144,13 +144,13 @@ def draw_polygons(
 
             # Find indices in w_xy which are modified by polygon
             # First for the edge coordinates (+1 since we're indexing edges)
-            edge_slices = [numpy.s_[i:f + 2] for i, f in zip(corner_min, corner_max)]
+            edge_slices = [numpy.s_[i:f + 2] for i, f in zip(corner_min, corner_max, strict=True)]
             # Then for the pixel centers (-bdi_min since we're
             #  calculating weights within a subspace)
             centers_slice = tuple(numpy.s_[i:f + 1] for i, f in zip(corner_min - bdi_min[surface],
-                                                                    corner_max - bdi_min[surface]))
+                                                                    corner_max - bdi_min[surface], strict=True))
 
-            aa_x, aa_y = (self.shifted_exyz(i)[a][s] for a, s in zip(surface, edge_slices))
+            aa_x, aa_y = (self.shifted_exyz(i)[a][s] for a, s in zip(surface, edge_slices, strict=True))
             w_xy[centers_slice] += raster(polygon.T, aa_x, aa_y)
 
         # Clamp overlapping polygons to 1
@@ -380,7 +380,7 @@ def draw_extrude_rectangle(
         def f_foreground(xs, ys, zs, i=i, foreground=foreground) -> NDArray[numpy.int_]:
             # transform from natural position to index
             xyzi = numpy.array([self.pos2ind(qrs, which_shifts=i)
-                                for qrs in zip(xs.flat, ys.flat, zs.flat)], dtype=int)
+                                for qrs in zip(xs.flat, ys.flat, zs.flat, strict=True)], dtype=int)
             # reshape to original shape and keep only in-plane components
             qi, ri = (numpy.reshape(xyzi[:, k], xs.shape) for k in surface)
             return foreground[qi, ri]
