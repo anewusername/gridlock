@@ -60,12 +60,14 @@ class GridDrawMixin(GridPosMixin):
         # Check polygons, and remove redundant coordinates
         surface = numpy.delete(range(3), surface_normal)
 
-        for i, polygon in enumerate(poly_list):
-            malformed = f'Malformed polygon: ({i})'
+        for ii in range(len(poly_list)):
+            polygon = poly_list[ii]
+            malformed = f'Malformed polygon: ({ii})'
             if polygon.shape[1] not in (2, 3):
                 raise GridError(malformed + 'must be a Nx2 or Nx3 ndarray')
             if polygon.shape[1] == 3:
                 polygon = polygon[surface, :]
+                poly_list[ii] = polygon
 
             if not polygon.shape[0] > 2:
                 raise GridError(malformed + 'must consist of more than 2 points')
