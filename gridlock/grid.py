@@ -94,7 +94,7 @@ class Grid(GridDrawMixin, GridReadMixin, GridPosMixin):
         Raises:
             `GridError` on invalid input
         """
-        edge_arrs = [numpy.array(cc, copy=False) for cc in pixel_edge_coordinates]
+        edge_arrs = [numpy.asarray(cc) for cc in pixel_edge_coordinates]
         self.exyz = [numpy.unique(edges) for edges in edge_arrs]
         self.shifts = numpy.array(shifts, dtype=float)
 

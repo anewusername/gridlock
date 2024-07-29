@@ -53,7 +53,7 @@ class GridDrawMixin(GridPosMixin):
         if surface_normal not in range(3):
             raise GridError('Invalid surface_normal direction')
         center = numpy.squeeze(center)
-        poly_list = [numpy.array(poly, copy=False) for poly in polygons]
+        poly_list = [numpy.asarray(poly) for poly in polygons]
 
         # Check polygons, and remove redundant coordinates
         surface = numpy.delete(range(3), surface_normal)
@@ -293,7 +293,7 @@ class GridDrawMixin(GridPosMixin):
                  sizes of the cuboid
             foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
         """
-        dimensions = numpy.array(dimensions, copy=False)
+        dimensions = numpy.asarray(dimensions)
         p = numpy.array([[-dimensions[0], +dimensions[1]],
                          [+dimensions[0], +dimensions[1]],
                          [+dimensions[0], -dimensions[1]],
