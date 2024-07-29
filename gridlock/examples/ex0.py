@@ -37,8 +37,8 @@ if __name__ == '__main__':
     # eg.draw_slab(Direction.z, 0, 10, 2)
     eg.save('/home/jan/Desktop/test.pickle')
     eg.draw_cylinder(egc, surface_normal=2, center=[0, 0, 0], radius=2.0,
-                     thickness=10, num_poitns=1000, foreground=1)
+                     thickness=10, num_points=1000, foreground=1)
     eg.draw_extrude_rectangle(egc, rectangle=[[-2, 1, -1], [0, 1, 1]],
-                              direction=1, poalarity=+1, distance=5)
+                              direction=1, polarity=+1, distance=5)
     eg.visualize_slice(egc, surface_normal=2, center=0, which_shifts=2)
     eg.visualize_isosurface(egc, which_shifts=2)
