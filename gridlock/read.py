@@ -162,6 +162,7 @@ def visualize_isosurface(
     import skimage.measure
     # Claims to be unused, but needed for subplot(projection='3d')
     from mpl_toolkits.mplot3d import Axes3D
+    del Axes3D      # imported for side effects only
 
     # Get data from cell_data
     grid = cell_data[which_shifts][::sample_period, ::sample_period, ::sample_period]
