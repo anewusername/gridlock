@@ -1,8 +1,7 @@
-from typing import ClassVar, Self, Protocol
-from collections.abc import Callable, Sequence
+from typing import Protocol
 
 import numpy
-from numpy.typing import NDArray, ArrayLike
+from numpy.typing import NDArray
 
 from . import GridError
 
@@ -38,7 +37,7 @@ class GridBase(Protocol):
         return [self.exyz[a][:-1] + self.dxyz[a] / 2.0 for a in range(3)]
 
     @property
-    def shape(self) -> NDArray[numpy.int_]:
+    def shape(self) -> NDArray[numpy.intp]:
         """
         The number of cells in x, y, and z
 
@@ -55,7 +54,7 @@ class GridBase(Protocol):
         return self.shifts.shape[0]
 
     @property
-    def cell_data_shape(self):
+    def cell_data_shape(self) -> NDArray[numpy.intp]:
         """
         The shape of the cell_data ndarray (num_grids, *self.shape).
         """
@@ -180,7 +179,7 @@ class GridBase(Protocol):
             raise GridError('Autoshifting requires exactly 3 grids')
         return [self.shifted_dxyz(which_shifts=a)[a] for a in range(3)]
 
-    def allocate(self, fill_value: float | None = 1.0, dtype=numpy.float32) -> NDArray:
+    def allocate(self, fill_value: float | None = 1.0, dtype: type[numpy.number] = numpy.float32) -> NDArray:
         """
         Allocate an ndarray for storing grid data.
 
@@ -194,5 +193,4 @@ class GridBase(Protocol):
         """
         if fill_value is None:
             return numpy.empty(self.cell_data_shape, dtype=dtype)
-        else:
-            return numpy.full(self.cell_data_shape, fill_value, dtype=dtype)
+        return numpy.full(self.cell_data_shape, fill_value, dtype=dtype)

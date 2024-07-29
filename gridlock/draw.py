@@ -1,7 +1,6 @@
 """
 Drawing-related methods for Grid class
 """
-from typing import Union
 from collections.abc import Sequence, Callable
 
 import numpy
@@ -20,7 +19,7 @@ from .position import GridPosMixin
 
 
 foreground_callable_t = Callable[[NDArray, NDArray, NDArray], NDArray]
-foreground_t = Union[float, foreground_callable_t]
+foreground_t = float | foreground_callable_t
 
 
 class GridDrawMixin(GridPosMixin):
@@ -166,7 +165,7 @@ class GridDrawMixin(GridPosMixin):
             # 2) Generate weights in z-direction
             w_z = numpy.zeros(((bdi_max - bdi_min + 1)[surface_normal], ))
 
-            def get_zi(offset, i=i, w_z=w_z):
+            def get_zi(offset: float, i=i, w_z=w_z) -> tuple[float, int]:          # noqa: ANN001
                 edges = self.shifted_exyz(i)[surface_normal]
                 point = center[surface_normal] + offset
                 grid_coord = numpy.digitize(point, edges) - 1
@@ -384,10 +383,10 @@ class GridDrawMixin(GridPosMixin):
             ind[direction] += 1                         # type: ignore #(known safe)
             foreground += mult[1] * grid[tuple(ind)]
 
-            def f_foreground(xs, ys, zs, i=i, foreground=foreground) -> NDArray[numpy.int_]:
+            def f_foreground(xs, ys, zs, i=i, foreground=foreground) -> NDArray[numpy.int64]:            # noqa: ANN001
                 # transform from natural position to index
                 xyzi = numpy.array([self.pos2ind(qrs, which_shifts=i)
-                                    for qrs in zip(xs.flat, ys.flat, zs.flat, strict=True)], dtype=int)
+                                    for qrs in zip(xs.flat, ys.flat, zs.flat, strict=True)], dtype=numpy.int64)
                 # reshape to original shape and keep only in-plane components
                 qi, ri = (numpy.reshape(xyzi[:, k], xs.shape) for k in surface)
                 return foreground[qi, ri]
