@@ -297,7 +297,7 @@ class GridDrawMixin(GridPosMixin):
         p = numpy.array([[-dimensions[0], +dimensions[1]],
                          [+dimensions[0], +dimensions[1]],
                          [+dimensions[0], -dimensions[1]],
-                         [-dimensions[0], -dimensions[1]]], dtype=float) / 2.0
+                         [-dimensions[0], -dimensions[1]]], dtype=float) * 0.5
         thickness = dimensions[2]
         self.draw_polygon(cell_data, 2, center, p, thickness, foreground)
 

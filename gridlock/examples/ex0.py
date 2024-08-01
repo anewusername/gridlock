@@ -29,9 +29,9 @@ if __name__ == '__main__':
     #         numpy.linspace(-5.5, 5.5, 10)]
 
     half_x = [.25, .5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 3.5]
-    xyz3 = [numpy.array([-x for x in half_x[::-1]] + [0] + half_x),
-            numpy.linspace(-5.5, 5.5, 10),
-            numpy.linspace(-5.5, 5.5, 10)]
+    xyz3 = [numpy.array([-x for x in half_x[::-1]] + [0] + half_x, dtype=float),
+            numpy.linspace(-5.5, 5.5, 10, dtype=float),
+            numpy.linspace(-5.5, 5.5, 10, dtype=float)]
     eg = Grid(xyz3)
     egc = eg.allocate(0)
     # eg.draw_slab(Direction.z, 0, 10, 2)
