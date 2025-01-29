@@ -15,8 +15,23 @@ Dependencies:
 - mpl_toolkits.mplot3d  [Grid.visualize_isosurface()]
 - skimage               [Grid.visualize_isosurface()]
 """
-from .error import GridError as GridError
+from .utils import (
+    GridError as GridError,
+
+    Extent as Extent,
+    ExtentProtocol as ExtentProtocol,
+    ExtentDict as ExtentDict,
+
+    Slab as Slab,
+    SlabProtocol as SlabProtocol,
+    SlabDict as SlabDict,
+
+    Plane as Plane,
+    PlaneProtocol as PlaneProtocol,
+    PlaneDict as PlaneDict,
+    )
 from .grid import Grid as Grid
+
 
 __author__ = 'Jan Petykiewicz'
 __version__ = '1.2'

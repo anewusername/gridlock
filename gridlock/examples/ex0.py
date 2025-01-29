@@ -6,18 +6,18 @@ if __name__ == '__main__':
     # xyz = [numpy.arange(-5.0, 6.0), numpy.arange(-4.0, 5.0), [-1.0, 1.0]]
     # eg = Grid(xyz)
     # egc = Grid.allocate(0.0)
-    # # eg.draw_slab(egc, surface_normal=2, center=0, thickness=10, foreground=2)
-    # eg.draw_cylinder(egc, surface_normal=2, center=[0, 0, 0], radius=4,
-    #       thickness=10, num_points=1000, foreground=1)
-    # eg.visualize_slice(egc, surface_normal=2, center=0, which_shifts=2)
+    # # eg.draw_slab(egc, slab=dict(axis=2, center=0, span=10), foreground=2)
+    # eg.draw_cylinder(egc, h=slab(axis=2, center=0, span=10),
+    #     center2d=[0, 0], radius=4, thickness=10, num_points=1000, foreground=1)
+    # eg.visualize_slice(egc, plane=dict(z=0), which_shifts=2)
 
     # xyz2 = [numpy.arange(-5.0, 6.0), [-1.0, 1.0], numpy.arange(-4.0, 5.0)]
     # eg2 = Grid(xyz2)
     # eg2c = Grid.allocate(0.0)
-    # # eg2.draw_slab(eg2c, surface_normal=2, center=0, thickness=10, foreground=2)
-    # eg2.draw_cylinder(eg2c, surface_normal=1, center=[0, 0, 0],
-    #                   radius=4, thickness=10, num_points=1000, foreground=1.0)
-    # eg2.visualize_slice(eg2c, surface_normal=1, center=0, which_shifts=1)
+    # # eg2.draw_slab(eg2c, slab=dict(axis=2, center=0, span=10), foreground=2)
+    # eg2.draw_cylinder(eg2c, h=slab(axis=1, center=0, span=10), center2d=[0, 0],
+    #     radius=4, num_points=1000, foreground=1.0)
+    # eg2.visualize_slice(eg2c, plane=dict(y=0), which_shifts=1)
 
     # n = 20
     # m = 3
@@ -36,9 +36,20 @@ if __name__ == '__main__':
     egc = eg.allocate(0)
     # eg.draw_slab(Direction.z, 0, 10, 2)
     eg.save('/home/jan/Desktop/test.pickle')
-    eg.draw_cylinder(egc, surface_normal=2, center=[0, 0, 0], radius=2.0,
-                     thickness=10, num_points=1000, foreground=1)
-    eg.draw_extrude_rectangle(egc, rectangle=[[-2, 1, -1], [0, 1, 1]],
-                              direction=1, polarity=+1, distance=5)
-    eg.visualize_slice(egc, surface_normal=2, center=0, which_shifts=2)
+    eg.draw_cylinder(
+        egc,
+        h=dict(axis='z', center=0, span=10),
+        center2d=[0, 0],
+        radius=2.0,
+        num_points=1000,
+        foreground=1,
+        )
+    eg.draw_extrude_rectangle(
+        egc,
+        rectangle=[[-2, 1, -1], [0, 1, 1]],
+        direction=1,
+        polarity=+1,
+        distance=5,
+        )
+    eg.visualize_slice(egc, plane=dict(z=0), which_shifts=2)
     eg.visualize_isosurface(egc, which_shifts=2)

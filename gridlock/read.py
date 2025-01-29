@@ -6,7 +6,7 @@ from typing import Any, TYPE_CHECKING
 import numpy
 from numpy.typing import NDArray
 
-from . import GridError
+from .utils import GridError, Plane, PlaneDict, PlaneProtocol
 from .position import GridPosMixin
 
 if TYPE_CHECKING:
@@ -23,27 +23,25 @@ class GridReadMixin(GridPosMixin):
     def get_slice(
             self,
             cell_data: NDArray,
-            surface_normal: int,
-            center: float,
+            plane: PlaneProtocol | PlaneDict,
             which_shifts: int = 0,
             sample_period: int = 1
             ) -> NDArray:
         """
         Retrieve a slice of a grid.
-        Interpolates if given a position between two planes.
+        Interpolates if given a position between two grid planes.
 
         Args:
             cell_data: Cell data to slice
-            surface_normal: Axis normal to the plane we're displaying. Integer in `range(3)`.
-            center: Scalar specifying position along surface_normal axis.
+            plane: Axis and position (`Plane`) of the plane to read.
             which_shifts: Which grid to display. Default is the first grid (0).
             sample_period: Period for down-sampling the image. Default 1 (disabled)
 
         Returns:
             Array containing the portion of the grid.
         """
-        if numpy.size(center) != 1 or not numpy.isreal(center):
-            raise GridError('center must be a real scalar')
+        if isinstance(plane, dict):
+            plane = Plane(**plane)
 
         sp = round(sample_period)
         if sp <= 0:
@@ -52,15 +50,12 @@ class GridReadMixin(GridPosMixin):
         if numpy.size(which_shifts) != 1 or which_shifts < 0:
             raise GridError('Invalid which_shifts')
 
-        if surface_normal not in range(3):
-            raise GridError('Invalid surface_normal direction')
-
-        surface = numpy.delete(range(3), surface_normal)
+        surface = numpy.delete(range(3), plane.axis)
 
         # Extract indices and weights of planes
-        center3 = numpy.insert([0, 0], surface_normal, (center,))
+        center3 = numpy.insert([0, 0], plane.axis, (plane.pos,))
         center_index = self.pos2ind(center3, which_shifts,
-                                    round_ind=False, check_bounds=False)[surface_normal]
+                                    round_ind=False, check_bounds=False)[plane.axis]
         centers = numpy.unique([numpy.floor(center_index), numpy.ceil(center_index)]).astype(int)
         if len(centers) == 2:
             fpart = center_index - numpy.floor(center_index)
@@ -68,14 +63,14 @@ class GridReadMixin(GridPosMixin):
         else:
             w = [1]
 
-        c_min, c_max = (self.xyz[surface_normal][i] for i in [0, -1])
-        if center < c_min or center > c_max:
+        c_min, c_max = (self.xyz[plane.axis][i] for i in [0, -1])
+        if plane.pos < c_min or plane.pos > c_max:
             raise GridError('Coordinate of selected plane must be within simulation domain')
 
         # Extract grid values from planes above and below visualized slice
         sliced_grid = numpy.zeros(self.shape[surface])
         for ci, weight in zip(centers, w, strict=True):
-            s = tuple(ci if a == surface_normal else numpy.s_[::sp] for a in range(3))
+            s = tuple(ci if a == plane.axis else numpy.s_[::sp] for a in range(3))
             sliced_grid += weight * cell_data[which_shifts][tuple(s)]
 
         # Remove extra dimensions
@@ -87,20 +82,19 @@ class GridReadMixin(GridPosMixin):
     def visualize_slice(
             self,
             cell_data: NDArray,
-            surface_normal: int,
-            center: float,
+            plane: PlaneProtocol | PlaneDict,
             which_shifts: int = 0,
             sample_period: int = 1,
             finalize: bool = True,
             pcolormesh_args: dict[str, Any] | None = None,
-            ) -> tuple['matplotlib.axes.Axes', 'matplotlib.figure.Figure']:
+            ) -> tuple['matplotlib.figure.Figure', 'matplotlib.axes.Axes']:
         """
         Visualize a slice of a grid.
-        Interpolates if given a position between two planes.
+        Interpolates if given a position between two grid planes.
 
         Args:
-            surface_normal: Axis normal to the plane we're displaying. Integer in `range(3)`.
-            center: Scalar specifying position along surface_normal axis.
+            cell_data: Cell data to visualize
+            plane: Axis and position (`Plane`) of the plane to read.
             which_shifts: Which grid to display. Default is the first grid (0).
             sample_period: Period for down-sampling the image. Default 1 (disabled)
             finalize: Whether to call `pyplot.show()` after constructing the plot. Default `True`
@@ -110,16 +104,20 @@ class GridReadMixin(GridPosMixin):
         """
         from matplotlib import pyplot
 
+        if isinstance(plane, dict):
+            plane = Plane(**plane)
+
         if pcolormesh_args is None:
             pcolormesh_args = {}
 
-        grid_slice = self.get_slice(cell_data=cell_data,
-                                    surface_normal=surface_normal,
-                                    center=center,
-                                    which_shifts=which_shifts,
-                                    sample_period=sample_period)
+        grid_slice = self.get_slice(
+            cell_data=cell_data,
+            plane=plane,
+            which_shifts=which_shifts,
+            sample_period=sample_period,
+            )
 
-        surface = numpy.delete(range(3), surface_normal)
+        surface = numpy.delete(range(3), plane.axis)
 
         x, y = (self.shifted_exyz(which_shifts)[a] for a in surface)
         xmesh, ymesh = numpy.meshgrid(x, y, indexing='ij')
@@ -145,7 +143,7 @@ class GridReadMixin(GridPosMixin):
             sample_period: int = 1,
             show_edges: bool = True,
             finalize: bool = True,
-            ) -> tuple['matplotlib.axes.Axes', 'matplotlib.figure.Figure']:
+            ) -> tuple['matplotlib.figure.Figure', 'matplotlib.axes.Axes']:
         """
         Draw an isosurface plot of the device.
 
@@ -183,18 +181,18 @@ class GridReadMixin(GridPosMixin):
         fig = pyplot.figure()
         ax = fig.add_subplot(111, projection='3d')
         if show_edges:
-            ax.plot_trisurf(xs, ys, faces, zs)
+            ax.plot_trisurf(xs, ys, faces, zs)                      # type: ignore
         else:
-            ax.plot_trisurf(xs, ys, faces, zs, edgecolor='none')
+            ax.plot_trisurf(xs, ys, faces, zs, edgecolor='none')    # type: ignore
 
         # Add a fake plot of a cube to force the axes to be equal lengths
         max_range = numpy.array([xs.max() - xs.min(),
                                  ys.max() - ys.min(),
                                  zs.max() - zs.min()], dtype=float).max()
         mg = numpy.mgrid[-1:2:2, -1:2:2, -1:2:2]
-        xbs = 0.5 * max_range * mg[0].flatten() + 0.5 * (xs.max() + xs.min())
-        ybs = 0.5 * max_range * mg[1].flatten() + 0.5 * (ys.max() + ys.min())
-        zbs = 0.5 * max_range * mg[2].flatten() + 0.5 * (zs.max() + zs.min())
+        xbs = 0.5 * max_range * mg[0].ravel() + 0.5 * (xs.max() + xs.min())
+        ybs = 0.5 * max_range * mg[1].ravel() + 0.5 * (ys.max() + ys.min())
+        zbs = 0.5 * max_range * mg[2].ravel() + 0.5 * (zs.max() + zs.min())
         # Comment or uncomment following both lines to test the fake bounding box:
         for xb, yb, zb in zip(xbs, ybs, zbs, strict=True):
             ax.plot([xb], [yb], [zb], 'w')
