@@ -252,8 +252,8 @@ class GridDrawMixin(GridPosMixin):
         u_min, u_max = self.exyz[surface[0]][[0, -1]]
         v_min, v_max = self.exyz[surface[1]][[0, -1]]
 
-        margin = 4 * numpy.max(self.dxyz[surface[0]].max(),
-                               self.dxyz[surface[1]].max())
+        margin = 4 * numpy.max([self.dxyz[surface[0]].max(),
+                                self.dxyz[surface[1]].max()])
 
         p = numpy.array([[u_min - margin, v_max + margin],
                          [u_max + margin, v_max + margin],
