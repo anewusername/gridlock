@@ -34,5 +34,5 @@ from .grid import Grid as Grid
 
 
 __author__ = 'Jan Petykiewicz'
-__version__ = '1.2'
+__version__ = '2.0'
 version = __version__
