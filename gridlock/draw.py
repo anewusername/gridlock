@@ -21,30 +21,31 @@ foreground_callable_t = Callable[[NDArray, NDArray, NDArray], NDArray]
 foreground_t = float | foreground_callable_t
 
 
-
 class GridDrawMixin(GridPosMixin):
     def draw_polygons(
             self,
             cell_data: NDArray,
+            foreground: Sequence[foreground_t] | foreground_t,
             slab: SlabProtocol | SlabDict,
             polygons: Sequence[ArrayLike],
-            foreground: Sequence[foreground_t] | foreground_t,
             *,
             offset2d: ArrayLike = (0, 0),
             ) -> None:
         """
-        Draw polygons on an axis-aligned plane.
+        Draw polygons on an axis-aligned slab.
 
         Args:
             cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
-            center: 3-element ndarray or list specifying an offset applied to all the polygons
-            polygons: List of Nx2 or Nx3 ndarrays, each specifying the vertices of a polygon
-                (non-closed, clockwise). If Nx3, the `slab.axis`-th coordinate is ignored. Each
-                polygon must have at least 3 vertices.
             foreground: Value to draw with ('brush color'). Can be scalar, callable, or a list
                 of any of these (1 per grid). Callable values should take an ndarray the shape of the
                 grid and return an ndarray of equal shape containing the foreground value at the given x, y,
                 and z (natural, not grid coordinates).
+            slab: `Slab` or slab-like dict specifying the slab in which the polygons will be drawn.
+            polygons: List of Nx2 or Nx3 ndarrays, each specifying the vertices of a polygon
+                (non-closed, clockwise). If Nx3, the `slab.axis`-th coordinate is ignored. Each
+                polygon must have at least 3 vertices.
+            offset2d: 2D offset to apply to polygon coordinates -- this offset is added directly
+                to the given polygon vertex coordinates. Default (0, 0).
 
         Raises:
             GridError
@@ -200,9 +201,9 @@ class GridDrawMixin(GridPosMixin):
     def draw_polygon(
             self,
             cell_data: NDArray,
+            foreground: Sequence[foreground_t] | foreground_t,
             slab: SlabProtocol | SlabDict,
             polygon: ArrayLike,
-            foreground: Sequence[foreground_t] | foreground_t,
             *,
             offset2d: ArrayLike = (0, 0),
             ) -> None:
@@ -211,11 +212,13 @@ class GridDrawMixin(GridPosMixin):
 
         Args:
             cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
-            slab: `Slab` in which to draw polygons.
+            foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
+            slab: `Slab` or slab-like dict specifying the slab in which the polygon will be drawn.
             polygon: Nx2 or Nx3 ndarray specifying the vertices of a polygon (non-closed,
                 clockwise). If Nx3, the `slab.axis`-th coordinate is ignored. Must have at
                 least 3 vertices.
-            foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
+            offset2d: 2D offset to apply to polygon coordinates -- this offset is added directly
+                to the given polygon vertex coordinates. Default (0, 0).
         """
         self.draw_polygons(
             cell_data = cell_data,
@@ -229,17 +232,16 @@ class GridDrawMixin(GridPosMixin):
     def draw_slab(
             self,
             cell_data: NDArray,
-            slab: SlabProtocol | SlabDict,
             foreground: Sequence[foreground_t] | foreground_t,
+            slab: SlabProtocol | SlabDict,
             ) -> None:
         """
         Draw an axis-aligned infinite slab.
 
         Args:
             cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
-            slab:
-            thickness: Thickness of the layer to draw
             foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
+            slab: `Slab` or slab-like dict (geometrical slab specification)
         """
         if isinstance(slab, dict):
             slab = Slab(**slab)
@@ -282,10 +284,10 @@ class GridDrawMixin(GridPosMixin):
 
         Args:
             cell_data: Cell data to modify (e.g. created by `Grid.allocate()`)
-            center: 3-element ndarray or list specifying the cuboid's center
-            dimensions: 3-element list or ndarray containing the x, y, and z edge-to-edge
-                 sizes of the cuboid
             foreground: Value to draw with ('brush color'). See `draw_polygons()` for details.
+            x: `Extent` or extent-like dict specifying the x-extent of the cuboid.
+            y: `Extent` or extent-like dict specifying the y-extent of the cuboid.
+            z: `Extent` or extent-like dict specifying the z-extent of the cuboid.
         """
         if isinstance(x, dict):
             x = Extent(**x)

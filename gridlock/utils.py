@@ -1,4 +1,4 @@
-from typing import Protocol, TypedDict, runtime_checkable
+from typing import Protocol, TypedDict, runtime_checkable, cast
 from dataclasses import dataclass
 
 
@@ -8,6 +8,10 @@ class GridError(Exception):
 
 
 class ExtentDict(TypedDict, total=False):
+    """
+    Geometrical definition of an extent (1D bounded region)
+    Must contain exactly two of `min`, `max`, `center`, or `span`.
+    """
     min: float
     center: float
     max: float
@@ -16,6 +20,9 @@ class ExtentDict(TypedDict, total=False):
 
 @runtime_checkable
 class ExtentProtocol(Protocol):
+    """
+    Anything that looks like an `Extent`
+    """
     center: float
     span: float
 
@@ -28,6 +35,10 @@ class ExtentProtocol(Protocol):
 
 @dataclass(init=False, slots=True)
 class Extent(ExtentProtocol):
+    """
+    Geometrical definition of an extent (1D bounded region)
+    May be constructed with any two of `min`, `max`, `center`, or `span`.
+    """
     center: float
     span: float
 
@@ -88,6 +99,10 @@ class Extent(ExtentProtocol):
 
 
 class SlabDict(TypedDict, total=False):
+    """
+    Geometrical definition of a slab (3D region bounded on one axis only)
+    Must contain `axis` plus any two of `min`, `max`, `center`, or `span`.
+    """
     min: float
     center: float
     max: float
@@ -97,6 +112,9 @@ class SlabDict(TypedDict, total=False):
 
 @runtime_checkable
 class SlabProtocol(ExtentProtocol, Protocol):
+    """
+    Anything that looks like a `Slab`
+    """
     axis: int
     center: float
     span: float
@@ -110,6 +128,10 @@ class SlabProtocol(ExtentProtocol, Protocol):
 
 @dataclass(init=False, slots=True)
 class Slab(Extent, SlabProtocol):
+    """
+    Geometrical definition of a slab (3D region bounded on one axis only)
+    May be constructed with `axis` (bounded axis) plus any two of `min`, `max`, `center`, or `span`.
+    """
     axis: int
 
     def __init__(
@@ -142,6 +164,10 @@ class Slab(Extent, SlabProtocol):
 
 
 class PlaneDict(TypedDict, total=False):
+    """
+    Geometrical definition of a plane (2D unbounded region in 3D space)
+    Must contain exactly one of `x`, `y`, `z`, or both `axis` and `pos`
+    """
     x: float
     y: float
     z: float
@@ -151,12 +177,19 @@ class PlaneDict(TypedDict, total=False):
 
 @runtime_checkable
 class PlaneProtocol(Protocol):
+    """
+    Anything that looks like a `Plane`
+    """
     axis: int
     pos: float
 
 
 @dataclass(init=False, slots=True)
 class Plane(PlaneProtocol):
+    """
+    Geometrical definition of a plane (2D unbounded region in 3D space)
+    May be constructed with any of `x=4`, `y=5`, `z=-5`, or `axis=2, pos=-5`.
+    """
     axis: int
     pos: float
 
@@ -192,7 +225,7 @@ class Plane(PlaneProtocol):
         if pos is not None:
             cpos = pos
         else:
-            cpos = (xx, yy, zz)[axis_int]
+            cpos = cast('float', (xx, yy, zz)[axis_int])
             assert cpos is not None
 
         if hasattr(cpos, '__len__'):
